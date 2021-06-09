@@ -23,8 +23,7 @@ void BulletsPool::shoot(Vector2D pos, Vector2D vel, double w, double h)
 
 void BulletsPool::disableAll() 
 {
-	vector<Bullet*> v = getPool();
-	for (Bullet* a : v) {
+	for (Bullet* a : pool.getPool()) {
 		a->setInUse(false);
 	}
 }
@@ -34,6 +33,19 @@ void BulletsPool::onCollision(Bullet* b, Asteroid* a)
 	b->setInUse(false);
 	//El resto de calculos sobre el asteroide se hacen en el AsteroidPool
 }
+
+int BulletsPool::getNumOfBullets()
+{
+	int nums = 0;
+
+	for(Bullet* b : pool.getPool()){
+		if(b->getInUse())
+			nums++;
+	}
+
+	return nums;
+}
+
 
 const std::vector<Bullet*>& BulletsPool::getPool()
 {

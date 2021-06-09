@@ -11,6 +11,7 @@ public:
 	void shoot(Vector2D pos, Vector2D vel, double w, double h);
 	void disableAll();
 	void onCollision(Bullet* b, Asteroid* a);
+	int getNumOfBullets();
 	const std::vector<Bullet*>& getPool();
 private:
 	ObjectPool<Bullet> pool;
