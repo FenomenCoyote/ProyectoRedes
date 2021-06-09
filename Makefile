@@ -4,7 +4,8 @@
 
 # Compiler settings - Can be customized.
 CC = g++
-CXXFLAGS = -std=c++11 -Wall -g
+INC_DIR = /usr/include/SDL2 
+CXXFLAGS = -std=c++11 -Wall -g -I$(INC_DIR)
 LDFLAGS = -lSDL2 -lSDL2_mixer -lSDL2_image -lSDL2_ttf
 
 # Makefile settings - Can be customized.

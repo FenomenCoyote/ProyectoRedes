@@ -1,76 +1,56 @@
-// std
+/*This source code copyrighted by Lazy Foo' Productions (2004-2020)
+and may not be redistributed without written permission.*/
+
+//Using SDL and standard IO
+#include <SDL.h>
 #include <stdio.h>
 
-// opengl
-#include <GL/glew.h>
+//Screen dimension constants
+const int SCREEN_WIDTH = 640;
+const int SCREEN_HEIGHT = 480;
 
-// sdl
-#include <SDL2/SDL.h>
-
-#define SCREEN_SIZE_X 800
-#define SCREEN_SIZE_Y 600
-
-int main (int argc, char* argv[])
+int main( int argc, char* args[] )
 {
-    // ----- Initialize SDL
-    if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
-    {
-        fprintf(stderr, "SDL could not initialize\n");
-        return 1;
-    }
+	//The window we'll be rendering to
+	SDL_Window* window = NULL;
+	
+	//The surface contained by the window
+	SDL_Surface* screenSurface = NULL;
 
-    // ----- Create window
-    SDL_Window* window = SDL_CreateWindow("My Game", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_SIZE_X, SCREEN_SIZE_Y, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
-    if (!window)
-    {
-        fprintf(stderr, "Error creating window.\n");
-        return 2;
-    }
+	//Initialize SDL
+	if( SDL_Init( SDL_INIT_EVERYTHING ) < 0 )
+	{
+		printf( "SDL could not initialize! SDL_Error: %s\n", SDL_GetError() );
+	}
+	else
+	{
+		//Create window
+		window = SDL_CreateWindow( "SDL Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN );
+		if( window == NULL )
+		{
+			printf( "Window could not be created! SDL_Error: %s\n", SDL_GetError() );
+		}
+		else
+		{
+			//Get window surface
+			screenSurface = SDL_GetWindowSurface( window );
 
-    // ----- SDL OpenGL settings
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+			//Fill the surface white
+			SDL_FillRect( screenSurface, NULL, SDL_MapRGB( screenSurface->format, 0xFF, 0xFF, 0xFF ) );
+			
+			//Update the surface
+			SDL_UpdateWindowSurface( window );
 
-    // ----- SDL OpenGL context
-    SDL_GLContext glContext = SDL_GL_CreateContext(window);
+			//Wait two seconds
+			SDL_Delay( 2000 );
+		}
+	}
 
-    // ----- SDL v-sync
-    SDL_GL_SetSwapInterval(1);
+	//Destroy window
+	SDL_DestroyWindow( window );
 
-    // ----- GLEW
-    glewInit();
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_TEXTURE_2D);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	//Quit SDL subsystems
+	SDL_Quit();
 
-    // ----- Game loop
-    bool quit = false;
-    while (quit == false)
-    {
-        SDL_Event windowEvent;
-        while (SDL_PollEvent(&windowEvent))
-        {
-            if (windowEvent.type == SDL_QUIT)
-            {
-                quit = true;
-                break;
-            }
-        }
-
-        /*
-            do drawing here
-        */
-
-        SDL_GL_SwapWindow(window);
-    }
-
-    // ----- Clean up
-    SDL_GL_DeleteContext(glContext);
-
-    return 0;
+	return 0;
 }
