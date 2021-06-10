@@ -2,10 +2,7 @@
 #include "Server.h"
 #include <assert.h>
 
-#include "GameCtrl.h"
 #include "GameLogic.h"
-
-#include "ScoreManager.h"
 
 #include "Transform.h"
 #include "Entity.h"
@@ -71,7 +68,6 @@ void Server::initGame() {
 	//Se crea el gameManager
 	Entity *gameManager = entityManager_->addEntity();
 	gameManager->addComponent<GameLogic>(asPool, bsPool, health, ship);
-	gameManager->addComponent<GameCtrl>(asPool, health);	
 }
 
 void Server::closeGame() {

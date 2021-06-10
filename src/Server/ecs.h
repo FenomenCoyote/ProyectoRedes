@@ -7,28 +7,14 @@ using CmpIdType = std::size_t;
 
 enum CmpId : CmpIdType {
 	Transform = 0,
-	SimpleMoveBehavior,
-	BallMoveBehaviour,
-	PaddleMoveBehaviour,
-	StopOnBorders,
-	Rectangle,
-	ScoreManager,
-	ScoreViewer,
-	FighterCtrl,
-	PaddleMouseCtrl,
-	GameCtrl,
 	GameLogic,
-	VelocityVectorViewer,
-	FighterViewer,
 	Health,
 	Gun,
 	BulletsPool,
 	FighterMotion,
 	AsteroidPool,
 	AsteroidsMotion,
-	AsteroidsViewer,
 	BulletsMotion,
-	BulletsViewer,
 	//
 	// don't touch the rest of this enum, it is to identify the max
 	// number of components

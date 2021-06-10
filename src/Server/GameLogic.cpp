@@ -9,21 +9,18 @@ GameLogic::GameLogic(AsteroidPool* asPool, BulletsPool* bsPool, Health* health, 
 		bsPool(bsPool), //
 		health(health), //
 		trCaza(trCaza),
-		scoreManager_(nullptr) //
+		running(true)
 {
 }
 
 GameLogic::~GameLogic() {
 }
 
-void GameLogic::init() {
-	scoreManager_ = GETCMP1_(ScoreManager);
-}
 
 //Logica del juego
 void GameLogic::update() {
 	//Si el juego esta en marcha
-	if (scoreManager_->isRunning()) {
+	if (running) {
 		//Se chequea las colisiones de los asteroides
 		for (auto& as : asPool->getPool()) {
 			//Si el asteroide esta activo
@@ -37,15 +34,7 @@ void GameLogic::update() {
 					trCaza->setPos(game_->getWindowWidth() / 2 - trCaza->getW() / 2, game_->getWindowHeight() / 2 - trCaza->getH() / 2);
 					trCaza->setVel(0, 0);
 					trCaza->setRot(0);			
-					game_->getAudioMngr()->playChannel(Resources::Explosion, 0);
-					scoreManager_->setRunning(false);
-					//Si el jugador ha perdido, se resetea el juego
-					if (health->getHp() <= 0) {
-						scoreManager_->setWin(false);
-						scoreManager_->setGameOver(true);
-						game_->getAudioMngr()->haltMusic();
-					}
-					else game_->getAudioMngr()->pauseMusic();
+					running = false;		
 				}
 
 				//Se chequea si el asteroide colisiona con una bala
@@ -57,17 +46,6 @@ void GameLogic::update() {
 						//Se llama a los onCollision de ambas entidades
 						asPool->onCollision(as, b);
 						bsPool->onCollision(b, as);
-						scoreManager_->addScore(game_->getCfg()["gameLogic"]["scoreToAdd"].as_int());
-						//Si ya no quedan mas asteroides, el jugador gana
-						if (asPool->getNumOfAsteroid() <= 0) {
-							trCaza->setPos(game_->getWindowWidth() / 2 - trCaza->getW() / 2, game_->getWindowHeight() / 2 - trCaza->getH() / 2);
-							trCaza->setVel(0, 0);
-							trCaza->setRot(0);
-							game_->getAudioMngr()->pauseMusic();
-							scoreManager_->setRunning(false);
-							scoreManager_->setGameOver(true);
-							scoreManager_->setWin(true);
-						}
 					}
 				}
 			}

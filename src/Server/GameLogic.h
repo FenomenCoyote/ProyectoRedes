@@ -10,12 +10,13 @@ class GameLogic: public Component {
 public:
 	GameLogic(AsteroidPool* asPool, BulletsPool* bsPool, Health* health, Transform* trCaza);
 	virtual ~GameLogic();
-	void init() override;
 	void update() override;
 private:
 	AsteroidPool* asPool; 
 	BulletsPool* bsPool;
 	Health* health;
 	Transform* trCaza;
+
+	bool running;
 };
 
