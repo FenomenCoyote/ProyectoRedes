@@ -22,15 +22,23 @@
 
 #include "BulletsMotion.h"
 
+#include "ServerMsg.h"
+
 using namespace std;
 
 constexpr float timeWait = 1000.0f/60.0f;
 
-Server::Server() :
+Server::Server(const char* address, const char* port) :
 		game_(nullptr), //
 		entityManager_(nullptr), //
-		exit_(false) {
+		exit_(false), 
+		socket(address, port),
+		clientSocket(nullptr),
+		asPool(nullptr), bsPool(nullptr),
+		ship(nullptr), health(nullptr)
+{
 	initGame();
+	socket.bind();
 }
 
 Server::~Server() {
@@ -45,25 +53,24 @@ void Server::initGame() {
 
 	//Se crea la pool de Asteroides
 	Entity* asteroids = entityManager_->addEntity();
-	AsteroidPool* asPool = asteroids->addComponent<AsteroidPool>();
+	asPool = asteroids->addComponent<AsteroidPool>();
 	asteroids->addComponent<AsteroidsMotion>();
 
 	//Se crea la pool de Bullets
 	Entity* bullets = entityManager_->addEntity();
-	BulletsPool* bsPool = bullets->addComponent<BulletsPool>();
+	bsPool = bullets->addComponent<BulletsPool>();
 	bullets->addComponent<BulletsMotion>();
 
 	//Se crea el caza
-	Entity* ship = entityManager_->addEntity();
-	ship->addComponent<Transform>(Vector2D(game_->getWindowWidth()/2, game_->getWindowHeight() / 2), Vector2D(), 50, 50, 0);
-	ship->addComponent<Gun>(bsPool, 250);
-	Health* health = ship->addComponent<Health>();
-	ship->addComponent<FighterMotion>();
+	Entity* ship_ = entityManager_->addEntity();
+	ship = ship_->addComponent<Transform>(Vector2D(game_->getWindowWidth()/2, game_->getWindowHeight() / 2), Vector2D(), 50, 50, 0);
+	ship_->addComponent<Gun>(bsPool, 250);
+	health = ship_->addComponent<Health>();
+	ship_->addComponent<FighterMotion>();
 	
 	//Se crea el gameManager
 	Entity *gameManager = entityManager_->addEntity();
-	gameManager->addComponent<ScoreManager>();
-	gameManager->addComponent<GameLogic>(asPool, bsPool, health, GETCMP2(ship, Transform));
+	gameManager->addComponent<GameLogic>(asPool, bsPool, health, ship);
 	gameManager->addComponent<GameCtrl>(asPool, health);	
 }
 
@@ -74,6 +81,8 @@ void Server::closeGame() {
 void Server::playerInputThread() {
 	while(1){
 		//recv from player
+		//ClientInputMsg msg;
+		//clientSocket->recv(msg);
 
 		//If x the do y, 
 		//etc 
@@ -82,13 +91,18 @@ void Server::playerInputThread() {
 
 
 void Server::waitUntilPlayerConnect() {
-	//recv 
 
-	//store player info
+	//ClientMsg msg;
+	clientSocket = (Socket*)1;
+    //socket.recv(msg, clientSocket);
+
 }
 
-void Server::constructWorldMsg(){
-	
+void Server::sendWorldState(){
+	//Crear info
+	ServerMsg::WorldStateMSg msg(asPool, bsPool, ship, health);
+	//Mandar info a los dos jugadores (de momento solo a un jugador)
+	socket.send(msg, *clientSocket);
 }
 
 void Server::start() {
@@ -96,13 +110,15 @@ void Server::start() {
 
 	waitUntilPlayerConnect();
 
+	//Make InputThread
+
 	while (!exit_) {
 		Uint32 startTime = game_->getTime();
 
 		update();
 
-		//Mandar info a los dos jugadores (de momento solo a un jugador)
-
+		sendWorldState();
+	
 		Uint32 frameTime = game_->getTime() - startTime;
 		if (frameTime < timeWait)
 			SDL_Delay(timeWait - frameTime);

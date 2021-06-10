@@ -26,7 +26,7 @@ namespace ServerMsg
 
     void WorldStateMSg::to_bin() 
     {
-        size_t totalSize = 0;
+        size_t totalSize = sizeof(size_t);
         uint8_t numOfAsteroids = asPool->getNumOfAsteroid();
         uint8_t numOfBullets = buPool->getNumOfBullets();
 
@@ -40,6 +40,9 @@ namespace ServerMsg
         memset(_data, 0, size);
 
         char* pointer = _data;
+
+        memcpy(pointer, &totalSize, sizeof(size_t));
+        pointer += sizeof(size_t);
 
         //Asteroids
         memcpy(pointer, &numOfAsteroids, sizeof(uint8_t));
@@ -66,7 +69,7 @@ namespace ServerMsg
         pointer += objectInfoSize;
 
         //Health
-        memcpy(pointer, &health->getHp(), sizeof(uint8_t));
+        memcpy(pointer, &(uint8_t)health->getHp(), sizeof(uint8_t));
     }
 
     void WorldStateMSg::to_bin_object(char* pointer, Vector2D pos, int width, int height, double rot) 
