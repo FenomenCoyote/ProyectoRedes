@@ -13,6 +13,7 @@
 #include "Gun.h"
 #include "Health.h"
 #include "FighterMotion.h"
+#include "FighterCtrl.h"
 
 #include "AsteroidPool.h"
 #include "AsteroidsMotion.h"
@@ -20,6 +21,8 @@
 #include "BulletsMotion.h"
 
 #include "ServerMsg.h"
+
+#include "Client/ClientMsg.h"
 
 using namespace std;
 
@@ -32,7 +35,8 @@ Server::Server(const char* address, const char* port) :
 		socket(address, port),
 		clientSocket(nullptr),
 		asPool(nullptr), bsPool(nullptr),
-		ship(nullptr), health(nullptr)
+		shipTr(nullptr), shipCtrl(nullptr), 
+		health(nullptr)
 {
 	initGame();
 	socket.bind();
@@ -60,14 +64,15 @@ void Server::initGame() {
 
 	//Se crea el caza
 	Entity* ship_ = entityManager_->addEntity();
-	ship = ship_->addComponent<Transform>(Vector2D(game_->getWindowWidth()/2, game_->getWindowHeight() / 2), Vector2D(), 50, 50, 0);
+	shipTr = ship_->addComponent<Transform>(Vector2D(game_->getWindowWidth()/2, game_->getWindowHeight() / 2), Vector2D(), 50, 50, 0);
 	ship_->addComponent<Gun>(bsPool, 250);
 	health = ship_->addComponent<Health>();
+	shipCtrl = ship_->addComponent<FighterCtrl>();
 	ship_->addComponent<FighterMotion>();
 	
 	//Se crea el gameManager
 	Entity *gameManager = entityManager_->addEntity();
-	gameManager->addComponent<GameLogic>(asPool, bsPool, health, ship);
+	gameManager->addComponent<GameLogic>(asPool, bsPool, health, shipTr);
 }
 
 void Server::closeGame() {
@@ -76,12 +81,43 @@ void Server::closeGame() {
 
 void Server::playerInputThread() {
 	while(1){
-		//recv from player
-		//ClientInputMsg msg;
-		//clientSocket->recv(msg);
 
-		//If x the do y, 
-		//etc 
+		ClientMsg::Msg msg;
+		clientSocket->recv(msg);
+
+		switch (ClientMsg::ClientMsgId)
+		{
+		case ClientMsg::_INPUT_:
+			switch (ClientMsg::InputId)
+			{
+			case ClientMsg::InputId::_AHEAD_:
+				shipCtrl->goAhead();
+				break;
+			case ClientMsg::InputId::_LEFT_:
+				shipCtrl->turnLeft();
+				break;
+			case ClientMsg::InputId::_RIGHT_:
+				shipCtrl->turnRight();
+				break;
+			case ClientMsg::InputId::_SHOOT_:
+				shipCtrl->shoot();
+				break;
+			default:
+				assert(false);
+				break;
+			}
+			break;
+		case ClientMsg::_READY_:
+			break;
+		case ClientMsg::_LOGOUT_:
+			//Pillar mutex
+			exit_ = true;
+			//Soltar mutex
+			break;
+		default:
+			assert(false);
+			break;
+		}
 	}
 }
 
@@ -89,14 +125,18 @@ void Server::playerInputThread() {
 void Server::waitUntilPlayerConnect() {
 
 	//ClientMsg msg;
+	ClientMsg::Msg msg;
 	clientSocket = (Socket*)1;
-    //socket.recv(msg, clientSocket);
+    socket.recv(msg, clientSocket);
 
+	assert(msg.type != ClientMsg::_LOGIN_)
 }
 
 void Server::sendWorldState(){
+	if(clientSocket == nullptr)
+		return;
 	//Crear info
-	ServerMsg::WorldStateMSg msg(asPool, bsPool, ship, health);
+	ServerMsg::WorldStateMSg msg(asPool, bsPool, shipTr, health);
 	//Mandar info a los dos jugadores (de momento solo a un jugador)
 	socket.send(msg, *clientSocket);
 }
@@ -109,6 +149,7 @@ void Server::start() {
 	//Make InputThread
 
 	while (!exit_) {
+		//Soltar mutex
 		Uint32 startTime = game_->getTime();
 
 		update();
@@ -118,6 +159,8 @@ void Server::start() {
 		Uint32 frameTime = game_->getTime() - startTime;
 		if (frameTime < timeWait)
 			SDL_Delay(timeWait - frameTime);
+
+		//Pillar mutex
 	}
 }
 

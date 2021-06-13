@@ -1,6 +1,5 @@
 #include "GameLogic.h"
 #include "Collisions.h"
-#include "Resources.h"
 #include "Entity.h"
 
 GameLogic::GameLogic(AsteroidPool* asPool, BulletsPool* bsPool, Health* health, Transform* trCaza) :
@@ -34,11 +33,10 @@ void GameLogic::update() {
 					trCaza->setPos(game_->getWindowWidth() / 2 - trCaza->getW() / 2, game_->getWindowHeight() / 2 - trCaza->getH() / 2);
 					trCaza->setVel(0, 0);
 					trCaza->setRot(0);			
-					running = false;		
+					running = false;
 				}
 
 				//Se chequea si el asteroide colisiona con una bala
-				//Mirar si usar un while
 				for (auto& b : bsPool->getPool()) {
 					//Si la bala esta activa y el asteroide colisiona con ella
 					if (b->getInUse() && Collisions::collidesWithRotation(as->getPos(), as->getWidth(), as->getHeight(), as->getRot(),

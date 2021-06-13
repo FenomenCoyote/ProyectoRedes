@@ -1,7 +1,6 @@
 #include "AsteroidPool.h"
 #include "Asteroid.h"
 #include "Bullet.h"
-#include "Server.h"
 #include "SRandBasedGenerator.h"
 
 AsteroidPool::AsteroidPool(): Component(ecs::AsteroidPool), 

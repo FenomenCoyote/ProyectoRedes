@@ -13,7 +13,7 @@ namespace ServerMsg
         memcpy(pointer, &type, sizeof(ServerMsgId));
     }
     
-    int StartingGameMSg::from_bin(char * data) 
+    int StartingGameMSg::from_bin(char * bobj) 
     {
         alloc_data(size);
 
@@ -86,12 +86,64 @@ namespace ServerMsg
         pointer += sizeof(int);
         //Rot
         memcpy(pointer, &rot, sizeof(double));
-        pointer += sizeof(double);
     }
     
-    int WorldStateMSg::from_bin(char * data) 
+    ObjectInfo WorldStateMSg::from_bin_object(char* pointer) 
     {
-        return -1;
+        ObjectInfo obj;
+
+        //Pos
+        memcpy(&obj.posX, pointer, sizeof(double));
+        pointer += sizeof(double);
+        memcpy(&obj.posY, pointer, sizeof(double));
+        pointer += sizeof(double);
+        //Size
+        memcpy(&obj.width, pointer,sizeof(int));
+        pointer += sizeof(int);
+        memcpy(&obj.height, pointer, sizeof(int));
+        pointer += sizeof(int);
+        //Rot
+        memcpy(&obj.rot, pointer,sizeof(double));
+
+        return obj;
+    }
+    
+    int WorldStateMSg::from_bin(char * bobj) 
+    {
+        size_t totalSize;
+        memcpy(&totalSize, bobj, sizeof(size_t));
+
+        alloc_data(totalSize - sizeof(size_t));
+
+        char* pointer = bobj + sizeof(size_t);
+
+        uint8_t numOfAsteroids;
+        uint8_t numOfBullets;
+
+        //Asteroids
+        memcpy(&numOfAsteroids, pointer, sizeof(uint8_t));
+        pointer += sizeof(uint8_t);  
+        for (int i = 0; i < numOfAsteroids; ++i) {
+            asteroids.push_back(from_bin_object(pointer));
+            pointer += objectInfoSize;
+        }
+
+        //Bullets
+        memcpy(&numOfBullets, pointer, sizeof(uint8_t));
+        pointer += sizeof(uint8_t);  
+        for (int i = 0; i < numOfBullets; ++i) {
+            bullets.push_back(from_bin_object(pointer));
+            pointer += objectInfoSize;
+        }
+
+        //Ship
+        ship = from_bin_object(pointer);
+        pointer += objectInfoSize;
+
+        //Health
+        memcpy(&(uint8_t)health->getHp(), pointer, sizeof(uint8_t));
+
+        return 0;
     }
 }
 

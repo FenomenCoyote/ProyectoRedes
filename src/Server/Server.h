@@ -10,6 +10,7 @@ class AsteroidPool;
 class BulletsPool;
 class Transform;
 class Health;
+class FighterCtrl;
 
 class Server {
 
@@ -44,7 +45,8 @@ private:
 
 	AsteroidPool* asPool;
 	BulletsPool* bsPool;
-	Transform* ship;
+	Transform* shipTr;
+	FighterCtrl* shipCtrl;
 	Health* health;
 
 	const static int _WINDOW_WIDTH_ = 640;

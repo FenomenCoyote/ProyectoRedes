@@ -7,13 +7,15 @@
 #include "SDLGame.h"
 
 #include "SDL_macros.h"
+#include "ClientMsg.h"
 
 
 using namespace std;
 
-Client::Client() :
+Client::Client(const char* address, const char* port, const char* nick) :
 		game_(nullptr), //
-		exit_(false) {
+		exit_(false), 
+		socket(address, port) {
 	initGame();
 }
 
@@ -30,6 +32,8 @@ void Client::initGame() {
 	game_->getAudioMngr()->setChannelVolume(5); //Se deja la musica preparada para hacer un resume
 	game_->getAudioMngr()->pauseMusic();
 
+	ClientMsg::LoginMsg msg;
+	socket.send(msg, socket);
 }
 
 void Client::closeGame() {

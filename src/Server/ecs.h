@@ -11,6 +11,7 @@ enum CmpId : CmpIdType {
 	Health,
 	Gun,
 	BulletsPool,
+	FighterCtrl,
 	FighterMotion,
 	AsteroidPool,
 	AsteroidsMotion,
