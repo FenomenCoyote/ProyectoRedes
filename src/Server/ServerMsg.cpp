@@ -2,7 +2,7 @@
 
 namespace ServerMsg
 {
-    void StartingGameMSg::to_bin() 
+    void StartingGameMsg::to_bin() 
     {
         alloc_data(size);
 
@@ -13,7 +13,7 @@ namespace ServerMsg
         memcpy(pointer, &type, sizeof(ServerMsgId));
     }
     
-    int StartingGameMSg::from_bin(char * bobj) 
+    int StartingGameMsg::from_bin(char * bobj) 
     {
         alloc_data(size);
 
@@ -24,7 +24,29 @@ namespace ServerMsg
         return 0;
     }
 
-    void WorldStateMSg::to_bin() 
+    void EndingGameMsg::to_bin() 
+    {
+        alloc_data(size);
+
+        memset(_data, 0, size);
+
+        char* pointer = _data;
+
+        memcpy(pointer, &type, sizeof(ServerMsgId));
+    }
+    
+    int EndingGameMsg::from_bin(char * bobj) 
+    {
+        alloc_data(size);
+
+        char* pointer = bobj;
+
+        memcpy(&type, pointer, sizeof(ServerMsgId));
+
+        return 0;
+    }
+
+    void WorldStateMsg::to_bin() 
     {
         size_t totalSize = sizeof(size_t);
         uint8_t numOfAsteroids = asPool->getNumOfAsteroid();
@@ -34,6 +56,7 @@ namespace ServerMsg
         totalSize += sizeof(uint8_t) + numOfBullets * objectInfoSize; //Bullets
         totalSize += objectInfoSize; //Ship
         totalSize += sizeof(uint8_t); //Health
+        totalSize += sizeof(SoundId); //Sound
 
         alloc_data(totalSize);
 
@@ -70,9 +93,13 @@ namespace ServerMsg
 
         //Health
         memcpy(pointer, &(uint8_t)health->getHp(), sizeof(uint8_t));
+        pointer += sizeof(uint8_t);
+
+        //Sound
+        memcpy(pointer, &sound, sizeof(SoundId));
     }
 
-    void WorldStateMSg::to_bin_object(char* pointer, Vector2D pos, int width, int height, double rot) 
+    void WorldStateMsg::to_bin_object(char* pointer, Vector2D pos, int width, int height, double rot) 
     {
         //Pos
         memcpy(pointer, &pos.getX(), sizeof(double));
@@ -88,7 +115,7 @@ namespace ServerMsg
         memcpy(pointer, &rot, sizeof(double));
     }
     
-    ObjectInfo WorldStateMSg::from_bin_object(char* pointer) 
+    ObjectInfo WorldStateMsg::from_bin_object(char* pointer) 
     {
         ObjectInfo obj;
 
@@ -108,7 +135,7 @@ namespace ServerMsg
         return obj;
     }
     
-    int WorldStateMSg::from_bin(char * bobj) 
+    int WorldStateMsg::from_bin(char * bobj) 
     {
         size_t totalSize;
         memcpy(&totalSize, bobj, sizeof(size_t));
@@ -142,6 +169,10 @@ namespace ServerMsg
 
         //Health
         memcpy(&(uint8_t)health->getHp(), pointer, sizeof(uint8_t));
+        pointer += sizeof(uint8_t);
+
+        //Sound
+        memcpy(&sound, pointer, sizeof(SoundId));
 
         return 0;
     }

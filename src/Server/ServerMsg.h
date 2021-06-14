@@ -11,7 +11,13 @@ namespace ServerMsg
 {
     enum ServerMsgId : uint8_t {
         _STARTING_GAME,
-        _WORLD_STATE
+        _WORLD_STATE,
+        _ENDING_GAME
+    };
+
+    enum SoundId : uint8_t {
+        _NONE,
+        _ASTEROID_COLLISION_
     };
 
     class Msg : public Serializable {
@@ -21,9 +27,21 @@ namespace ServerMsg
             Msg(ServerMsgId type) : type(type) {}
     };
 
-    class StartingGameMSg : public Msg{
+    class StartingGameMsg : public Msg{
         public:
-            StartingGameMSg(): Msg(ServerMsgId::_STARTING_GAME){}
+            StartingGameMsg(): Msg(ServerMsgId::_STARTING_GAME){}
+
+            void to_bin() override;
+            int from_bin(char * bobj) override;
+
+        private:
+
+            const size_t size = sizeof(type);
+    };
+
+    class EndingGameMsg : public Msg{
+        public:
+            EndingGameMsg(): Msg(ServerMsgId::_ENDING_GAME){}
 
             void to_bin() override;
             int from_bin(char * bobj) override;
@@ -35,7 +53,7 @@ namespace ServerMsg
 
     constexpr size_t objectInfoSize = 3 * sizeof(double) + 2 * sizeof(int);
 
-    class WorldStateMSg : public Msg{
+    class WorldStateMsg : public Msg{
         public:
             struct ObjectInfo{
                 double posX, posY;
@@ -44,18 +62,21 @@ namespace ServerMsg
             };
 
         public:
-            WorldStateMSg(): WorldStateMSg(nullptr, nullptr, nullptr, nullptr) {}
+            WorldStateMsg(): WorldStateMsg(nullptr, nullptr, nullptr, nullptr) {}
 
-            WorldStateMSg(AsteroidPool* asPool, BulletsPool* buPool, Transform* ship, Health* health): Msg(ServerMsgId::_WORLD_STATE),
-                asteroids(), bullets(), ship(), health(),
+            WorldStateMsg(AsteroidPool* asPool, BulletsPool* buPool, Transform* ship, Health* health): Msg(ServerMsgId::_WORLD_STATE),
+                asteroids(), bullets(), ship(), health(), sound(SoundId::_NONE)
                 asPool_(asPool), buPool_(buPool), ship_(ship), health_(health) {}
 
             void to_bin() override;
             int from_bin(char* bobj) override;
+
+            void setSound(SoundId sound_) { sound = sound_;}
             
             std::vector<ObjectInfo> asteroids, bullets;
             ObjectInfo ship;
             uint8_t health;
+            SoundId sound;
 
         private:
             void to_bin_object(char* pointer, Vector2D pos, int width, int height, double rot);

@@ -31,7 +31,7 @@ constexpr float timeWait = 1000.0f/60.0f;
 Server::Server(const char* address, const char* port) :
 		game_(nullptr), //
 		entityManager_(nullptr), //
-		exit_(false), 
+		exit_(false), start_(false),
 		socket(address, port),
 		clientSocket(nullptr),
 		asPool(nullptr), bsPool(nullptr),
@@ -85,6 +85,8 @@ void Server::playerInputThread() {
 		ClientMsg::Msg msg;
 		clientSocket->recv(msg);
 
+		//pillar mutex
+
 		switch (ClientMsg::ClientMsgId)
 		{
 		case ClientMsg::_INPUT_:
@@ -108,16 +110,16 @@ void Server::playerInputThread() {
 			}
 			break;
 		case ClientMsg::_READY_:
+			start_ = true;
 			break;
 		case ClientMsg::_LOGOUT_:
-			//Pillar mutex
 			exit_ = true;
-			//Soltar mutex
 			break;
 		default:
 			assert(false);
 			break;
 		}
+		//Soltar mutex
 	}
 }
 
@@ -136,7 +138,10 @@ void Server::sendWorldState(){
 	if(clientSocket == nullptr)
 		return;
 	//Crear info
-	ServerMsg::WorldStateMSg msg(asPool, bsPool, shipTr, health);
+	ServerMsg::WorldStateMsg msg(asPool, bsPool, shipTr, health);
+	if(asPool->anyColision())
+		msg.setSound(ServerMsg::SoundId::_ASTEROID_COLLISION_);
+
 	//Mandar info a los dos jugadores (de momento solo a un jugador)
 	socket.send(msg, *clientSocket);
 }
@@ -147,6 +152,17 @@ void Server::start() {
 	waitUntilPlayerConnect();
 
 	//Make InputThread
+
+	//pillar mutex
+	while(!start_){
+		//Soltar mutex
+		SDL_Delay(timeWait);
+		//Pillax mutex
+	}
+	//Soltar mutex
+
+	ServerMsg::StartingGameMsg msg;
+	socket.send(msg, clientSocket);
 
 	while (!exit_) {
 		//Soltar mutex
@@ -162,6 +178,9 @@ void Server::start() {
 
 		//Pillar mutex
 	}
+
+	ServerMsg::EndingGameMsg msg;
+	socket.send(msg, clientSocket);
 }
 
 void Server::stop() {

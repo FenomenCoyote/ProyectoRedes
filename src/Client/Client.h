@@ -4,6 +4,7 @@
 
 #include "SDLGame.h"
 #include "Socket.h"
+#include "ServerMsg.h"
 
 class Client {
 
@@ -15,6 +16,8 @@ public:
 	void start();
 	void stop();
 
+	void netThread();
+
 private:
 	void initGame();
 	void closeGame();
@@ -25,6 +28,12 @@ private:
 	bool exit_;
 
 	Socket socket;
+
+	bool inGame;
+
+	vector<ServerMsg::WorldStateMsg::ObjectInfo> asteroids, bullets;
+	ServerMsg::WorldStateMsg::ObjectInfo ship;
+	uint8_t health;
 
 	const static int _WINDOW_WIDTH_ = 640;
 	const static int _WINDOW_HEIGHT_ = 480;

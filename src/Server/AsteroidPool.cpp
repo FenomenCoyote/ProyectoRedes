@@ -36,6 +36,7 @@ void AsteroidPool::disableAll()
 //Se llama cuando un asteroide a colisiona con la bala b
 void AsteroidPool::onCollision(Asteroid* a, Bullet* b)
 {
+	colision = true;
 	a->setInUse(false);
 	// game_->getAudioMngr()->playChannel(Resources::Explosion, 0);
 	// Mandar mensaje de evento

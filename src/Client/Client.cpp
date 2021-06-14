@@ -8,6 +8,7 @@
 
 #include "SDL_macros.h"
 #include "ClientMsg.h"
+#include "ServerMsg.h"
 
 
 using namespace std;
@@ -15,7 +16,8 @@ using namespace std;
 Client::Client(const char* address, const char* port, const char* nick) :
 		game_(nullptr), //
 		exit_(false), 
-		socket(address, port) {
+		socket(address, port), 
+		inGame(false) {
 	initGame();
 }
 
@@ -57,6 +59,43 @@ void Client::start() {
 
 void Client::stop() {
 	exit_ = true;
+	
+}
+
+void Client::netThread() 
+{
+	while(1){
+		//Pillar mutex
+		if(inGame){
+			//Soltar mutex
+			ServerMsg::Msg msg;
+			socket.recv(msg);
+
+			//Pillar mutex
+			if(msg.type == ServerMsg::EndingGameMsg){
+				inGame = false;
+			} 
+			else if(msg.type == ServerMsg::WorldStateMsg){
+				msg = static_cast<ServerMsg::WorldStateMsg>(msg);
+				asteroids = msg.
+
+
+			} 
+			else 
+				assert(false);
+
+			//Liberar mutex
+		}
+		else {
+			//Soltar mutex
+			ServerMsg::StartingGameMsg msg;
+			socket.recv(msg);
+
+			//Pillar mutex
+			inGame = true;
+			//Soltar mutex
+		}
+	}
 }
 
 void Client::handleInput() {
@@ -68,6 +107,8 @@ void Client::handleInput() {
 	if (ih->keyDownEvent()) {
 		if (ih->isKeyDown(SDLK_ESCAPE)) {
 			exit_ = true;
+			ClientMsg::LogoutMsg msg;
+			socket.send(msg, socket);
 		}
 
 		if (ih->isKeyDown(SDLK_f)) {
@@ -80,20 +121,29 @@ void Client::handleInput() {
 			}
 		}
 
-		if (ih->isKeyDown(SDLK_UP)) {
-			//mensaje de ir hacia arriba
+		if(!inGame)
+			return;
+
+		if (ih->isKeyDown(SDLK_SPACE) && !inGame) {
+			inGame = true;
+			ClientMsg::ReadyMsg msg;
+			socket.send(msg, socket);
 		}
-		else if (ih->isKeyDown(SDLK_DOWN)) {
-			//mensaje de ir hacia abajo
+		if (ih->isKeyDown(SDLK_UP)) {
+			ClientMsg::InputMsg msg(ClientMsg::InputId::_AHEAD_);
+			socket.send(msg, socket);
 		}
 		if (ih->isKeyDown(SDLK_LEFT)) {
-			//mensaje de ir hacia izquierda
+			ClientMsg::InputMsg msg(ClientMsg::InputId::_LEFT_);
+			socket.send(msg, socket);
 		}
 		else if (ih->isKeyDown(SDLK_RIGHT)) {
-			//mensaje de ir hacia derecha
+			ClientMsg::InputMsg msg(ClientMsg::InputId::_RIGHT_);
+			socket.send(msg, socket);
 		}
 		if (ih->isKeyDown(SDLK_SPACE)) {
-			//mensaje de disparar
+			ClientMsg::InputMsg msg(ClientMsg::InputId::_SHOOT_);
+			socket.send(msg, socket);
 		}
 	}
 
@@ -105,6 +155,12 @@ void Client::render() {
 	SDL_RenderClear(game_->getRenderer());
 
 	//Render los objetos que tenga
+	if(inGame){
+
+	}
+	else {
+
+	}
 
 	SDL_RenderPresent(game_->getRenderer());
 }

@@ -34,6 +34,7 @@ private:
 	SDLGame* game_;
 	EntityManager* entityManager_;
 	bool exit_;
+	bool start_;
 
 	//Socket 
 	Socket socket;
@@ -42,7 +43,6 @@ private:
 	Socket* clientSocket;
 
 	//Info del mundo para enviarla
-
 	AsteroidPool* asPool;
 	BulletsPool* bsPool;
 	Transform* shipTr;
