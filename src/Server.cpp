@@ -26,11 +26,11 @@ void Server::inputThread() {
 		ClientMsg::InputMsg msg;
 
 		Socket* clientSocket = (Socket*)1;
-		socket.recv(msg, *clientSocket);
+		socket.recv(msg, clientSocket);
 
 		if(msg.input == ClientMsg::InputId::_READY_){
 			//empezar partida (de momento)
-			game->start(socket, clientSocket);
+			game->start(&socket, clientSocket);
 		}
 		else if(msg.input == ClientMsg::InputId::_LOGOUT_){
 			//parar partida (de momento)
@@ -47,16 +47,6 @@ void Server::inputThread() {
 void Server::start() {
 
 	//Make InputThread
-
-	while (1) {
-		Uint32 startTime = game_->getTime();
-
-		game->update();
-	
-		Uint32 frameTime = game_->getTime() - startTime;
-		if (frameTime < timeWait)
-			SDL_Delay(timeWait - frameTime);
-	}
 
 }
 

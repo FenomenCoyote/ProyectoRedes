@@ -1,6 +1,6 @@
 #include "Entity.h"
 
-Entity::Entity(SDLGame *game, EntityManager *mngr) :
+Entity::Entity(ServerSDLGame *game, EntityManager *mngr) :
 		game_(game), //
 		mngr_(mngr) //
 {

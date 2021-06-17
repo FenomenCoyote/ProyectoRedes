@@ -2,7 +2,7 @@
 #include "Bullet.h"
 
 BulletsPool::BulletsPool(): Component(ecs::BulletsPool),
-		pool(SDLGame::instance()->getCfg()["gameLogic"]["poolSize"]["bullets"].as_int(), [](Bullet *o) { return o->getInUse(); })
+		pool(ServerSDLGame::instance()->getCfg()["gameLogic"]["poolSize"]["bullets"].as_int(), [](Bullet *o) { return o->getInUse(); })
 {
 }
 

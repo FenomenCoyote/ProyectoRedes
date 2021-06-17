@@ -1,4 +1,4 @@
-#include "SDLGame.h"
+#include "ServerSDLGame.h"
 
 #include <time.h>
 #include <iostream>
@@ -6,35 +6,35 @@
 #include "SRandBasedGenerator.h"
 
 
-unique_ptr<SDLGame> SDLGame::instance_;
+unique_ptr<ServerSDLGame> ServerSDLGame::instance_;
 
-SDLGame::SDLGame(int width, int height) :
+ServerSDLGame::ServerSDLGame(int width, int height) :
 		width_(width), height_(height) {
 	initSDL();
 	initResources();
 	cfg = jute::parser::parse_file("resources/cfg/asteroids.cfg");
 }
 
-SDLGame::~SDLGame() {
+ServerSDLGame::~ServerSDLGame() {
 	closeResources();
 	closeSDL();
 }
 
-void SDLGame::initSDL() {
+void ServerSDLGame::initSDL() {
 	int sdlInit_ret = SDL_Init(SDL_INIT_EVERYTHING);
 	assert(sdlInit_ret == 0);
 }
 
-void SDLGame::closeSDL() {
+void ServerSDLGame::closeSDL() {
 	SDL_Quit();
 }
 
-void SDLGame::initResources() {
+void ServerSDLGame::initResources() {
 	random_ = new SRandBasedGenerator();
 	random_->init();
 }
 
-void SDLGame::closeResources() {
+void ServerSDLGame::closeResources() {
 	delete random_;
 }
 

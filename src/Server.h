@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "../Socket.h"
+#include "Socket.h"
 #include "Game.h"
 
 class Server {
@@ -11,7 +11,7 @@ public:
 	Server(const char* address, const char* port);
 	virtual ~Server();
 
-	// from SDLGame
+	// from ServerSDLGame
 	void start();
 
 	void inputThread();

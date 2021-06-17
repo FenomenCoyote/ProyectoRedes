@@ -1,12 +1,12 @@
 #pragma once
 
-#include "SDLGame.h"
+#include "ServerSDLGame.h"
 
 class Entity;
 
 class EntityManager {
 public:
-	EntityManager(SDLGame* game);
+	EntityManager(ServerSDLGame* game);
 	virtual ~EntityManager();
 
 	void update();
@@ -14,6 +14,6 @@ public:
 
 
 private:
-	SDLGame* game_;
+	ServerSDLGame* game_;
 	std::vector<std::unique_ptr<Entity>> entities;
 };

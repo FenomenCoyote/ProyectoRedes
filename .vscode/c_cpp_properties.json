@@ -4,8 +4,6 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${workspaceFolder}/src/Server/**",
-                "${workspaceFolder}/src/Client/**",
                 "/usr/include/SDL2"
             ],
             "defines": [],

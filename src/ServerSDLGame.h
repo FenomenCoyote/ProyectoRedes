@@ -10,20 +10,20 @@
 
 using namespace std;
 
-class SDLGame {
+class ServerSDLGame {
 public:
-	virtual ~SDLGame();
+	virtual ~ServerSDLGame();
 
-	SDLGame(SDLGame&) = delete;
-	SDLGame& operator=(SDLGame&) = delete;
+	ServerSDLGame(ServerSDLGame&) = delete;
+	ServerSDLGame& operator=(ServerSDLGame&) = delete;
 
-	inline static SDLGame* init(int width, int height) {
+	inline static ServerSDLGame* init(int width, int height) {
 		assert(instance_.get() == nullptr);
-		instance_.reset(new SDLGame(width, height));
+		instance_.reset(new ServerSDLGame(width, height));
 		return instance_.get();
 	}
 
-	inline static SDLGame* instance() {
+	inline static ServerSDLGame* instance() {
 		assert(instance_.get() != nullptr);
 		return instance_.get();
 	}
@@ -47,7 +47,7 @@ public:
 	inline jute::jValue getCfg() { return cfg; }
 
 private:
-	SDLGame(int width, int height);
+	ServerSDLGame(int width, int height);
 
 	void initSDL(); // initialize SDL
 	void closeSDL(); // close SDL
@@ -63,7 +63,7 @@ protected:
 
 	jute::jValue cfg;
 
-	static unique_ptr<SDLGame> instance_;
+	static unique_ptr<ServerSDLGame> instance_;
 
 };
 

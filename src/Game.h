@@ -3,7 +3,7 @@
 #include <vector>
 
 #include "Manager.h"
-#include "SDLGame.h"
+#include "ServerSDLGame.h"
 #include "Socket.h"
 #include "ClientMsg.h"
 
@@ -18,7 +18,7 @@ public:
 	Game();
 	virtual ~Game();
 
-	// from SDLGame
+	// from ServerSDLGame
 	void start(Socket* socket_, Socket* clientSocket_);
 	void stop();
 
@@ -31,7 +31,7 @@ private:
 	void closeGame();
 	void update();
 
-	SDLGame* game_;
+	ServerSDLGame* game_;
 	EntityManager* entityManager_;
 	bool exit_;
 

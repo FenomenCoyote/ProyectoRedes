@@ -4,7 +4,7 @@
 
 #include "InputHandler.h"
 
-#include "Client/SDLGame.h"
+#include "SDLGame.h"
 
 #include "SDL_macros.h"
 #include "ClientMsg.h"
@@ -33,8 +33,6 @@ void Client::initGame() {
 	game_->getAudioMngr()->setChannelVolume(5); //Se deja la musica preparada para hacer un resume
 	game_->getAudioMngr()->pauseMusic();
 
-	ClientMsg::LoginMsg msg;
-	socket.send(msg, socket);
 }
 
 void Client::closeGame() {
@@ -113,7 +111,7 @@ void Client::handleInput() {
 
 		if (ih->isKeyDown(SDLK_SPACE)) {
 			inGame = true;
-			ClientMsg::InputMsg msg(ClientMsg::_READY_;
+			ClientMsg::InputMsg msg(ClientMsg::_READY_);
 			socket.send(msg, socket);
 		}
 
@@ -150,14 +148,14 @@ void Client::render() {
 		//Pillar mutex
 		for(ServerMsg::ServerMsg::ObjectInfo& o : asteroids){
 			SDL_Rect dest = RECT(o.posX, o.posY, o.width, o.height);
-			game_->getTextureMngr()->getTexture(Resources::Asteroid)->render(dest, o.rotation);
+			game_->getTextureMngr()->getTexture(Resources::Asteroid)->render(dest, o.rot);
 		}
 		for(ServerMsg::ServerMsg::ObjectInfo& o : bullets){
 			SDL_Rect dest = RECT(o.posX, o.posY, o.width, o.height);
-			game_->getTextureMngr()->getTexture(Resources::WhiteRect)->render(dest, o.rotation);
+			game_->getTextureMngr()->getTexture(Resources::WhiteRect)->render(dest, o.rot);
 		}
-		SDL_Rect dest = RECT(o.posX, o.posY, o.width, o.height);
-		game_->getTextureMngr()->getTexture(Resources::Airplanes)->render(dest, o.rotation);
+		SDL_Rect dest = RECT(ship.posX, ship.posY, ship.width, ship.height);
+		game_->getTextureMngr()->getTexture(Resources::Airplanes)->render(dest, ship.rot);
 
 		//Soltar mutex
 	}

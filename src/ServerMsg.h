@@ -33,7 +33,7 @@ namespace ServerMsg
             struct ObjectInfo{
                 double posX, posY;
                 int width, height;
-                double rotation;
+                double rot;
             };
 
         public:

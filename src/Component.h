@@ -3,7 +3,7 @@
 #include <SDL.h>
 
 #include "ecs.h"
-#include "SDLGame.h"
+#include "ServerSDLGame.h"
 
 class Entity;
 
@@ -11,7 +11,7 @@ class Entity;
 class Component {
 protected:
 	Entity* entity_;
-	SDLGame* game_;
+	ServerSDLGame* game_;
 	ecs::CmpId id_;
 public:
 	Component(ecs::CmpId id);
@@ -21,7 +21,7 @@ public:
 		entity_ = entity;
 	}
 
-	void setGame(SDLGame* game) {
+	void setGame(ServerSDLGame* game) {
 		game_ = game;
 	}
 

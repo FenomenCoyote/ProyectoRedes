@@ -5,7 +5,7 @@
 
 AsteroidPool::AsteroidPool(): Component(ecs::AsteroidPool), 
 		inUse(),
-		pool(SDLGame::instance()->getCfg()["gameLogic"]["poolSize"]["asteroids"].as_int(), [](Asteroid* o) { return o->getInUse(); })
+		pool(ServerSDLGame::instance()->getCfg()["gameLogic"]["poolSize"]["asteroids"].as_int(), [](Asteroid* o) { return o->getInUse(); })
 {
 }
 

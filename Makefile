@@ -4,7 +4,7 @@
 
 # Compiler settings - Can be customized.
 CC = g++
-INC_DIR = -I/usr/include/SDL2 -Isrc -Isrc/Server -Isrc/Client
+INC_DIR = -I/usr/include/SDL2
 CXXFLAGS = -std=c++11 -Wall -g $(INC_DIR)
 LDFLAGS = -lSDL2 -lSDL2_mixer -lSDL2_image -lSDL2_ttf -lpthread
 

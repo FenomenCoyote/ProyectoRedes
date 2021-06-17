@@ -7,11 +7,11 @@
 #include "Transform.h"
 #include "Entity.h"
 
-#include "SDLGame.h"
+#include "ServerSDLGame.h"
 
 #include "SDL_macros.h"
 #include "Gun.h"
-#include "Health.h"
+
 #include "FighterMotion.h"
 #include "FighterCtrl.h"
 
@@ -22,7 +22,7 @@
 
 #include "ServerMsg.h"
 
-#include "Client/ClientMsg.h"
+#include "ClientMsg.h"
 
 using namespace std;
 
@@ -38,7 +38,6 @@ Game::Game() :
 		shipTr(nullptr), shipCtrl(nullptr)
 {
 	initGame();
-	socket.bind();
 }
 
 Game::~Game() {
@@ -47,7 +46,7 @@ Game::~Game() {
 
 void Game::initGame() {
 
-	game_ = SDLGame::init(_WINDOW_WIDTH_, _WINDOW_HEIGHT_);
+	game_ = ServerSDLGame::init(_WINDOW_WIDTH_, _WINDOW_HEIGHT_);
 
 	entityManager_ = new EntityManager(game_);
 
@@ -70,7 +69,7 @@ void Game::initGame() {
 	
 	//Se crea el gameManager
 	Entity *gameManager = entityManager_->addEntity();
-	gameManager->addComponent<GameLogic>(asPool, bsPool, shipTr);
+	gameManager->addComponent<GameLogic>(asPool, bsPool, shipTr, this);
 }
 
 void Game::closeGame() {
@@ -108,18 +107,18 @@ void Game::sendWorldState(){
 		
 	//Crear info
 	if(exit_){
-		ServerMsg::ServerMsg msg(nullptr, nullptr, nullptr, this);
+		ServerMsg::ServerMsg msg;
 
 		//Mandar info a los dos jugadores (de momento solo a un jugador)
-		socket.send(msg, *clientSocket);
+		socket->send(msg, *clientSocket);
 	}
 	else {
-		ServerMsg::ServerMsg msg(asPool, bsPool, shipTr, this);
+		ServerMsg::ServerMsg msg(asPool, bsPool, shipTr);
 		if(asPool->anyColision())
 			msg.setSound(ServerMsg::SoundId::_ASTEROID_COLLISION_);
 
 		//Mandar info a los dos jugadores (de momento solo a un jugador)
-		socket.send(msg, *clientSocket);
+		socket->send(msg, *clientSocket);
 	}
 }
 

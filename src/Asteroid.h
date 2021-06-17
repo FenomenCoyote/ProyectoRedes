@@ -1,6 +1,6 @@
 #pragma once
 #include "Vector2D.h"
-#include "SDLGame.h"
+#include "ServerSDLGame.h"
 class Asteroid
 {
 public:
@@ -8,7 +8,7 @@ public:
 	inline bool getInUse() const { return inUse; }
 	inline void setInUse(bool b) { inUse = b; }
 
-	inline void setGame(SDLGame* Game) { game = Game; }
+	inline void setGame(ServerSDLGame* Game) { game = Game; }
 
 	inline void setPos(Vector2D Pos) { pos = Pos; }
 	inline Vector2D& getPos() { return pos; }
@@ -33,7 +33,7 @@ public:
 private:
 	bool inUse;
 	int gens_;
-	SDLGame* game;
+	ServerSDLGame* game;
 	Vector2D pos, dir;
 	int w, h;
 	double rot;

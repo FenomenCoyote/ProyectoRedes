@@ -31,8 +31,8 @@ private:
 
 	bool inGame;
 
-	vector<ServerMsg::WorldStateMsg::ObjectInfo> asteroids, bullets;
-	ServerMsg::WorldStateMsg::ObjectInfo ship;
+	vector<ServerMsg::ServerMsg::ObjectInfo> asteroids, bullets;
+	ServerMsg::ServerMsg::ObjectInfo ship;
 
 	const static int _WINDOW_WIDTH_ = 640;
 	const static int _WINDOW_HEIGHT_ = 480;

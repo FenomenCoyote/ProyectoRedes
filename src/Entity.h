@@ -4,13 +4,13 @@
 #include <array>
 #include "Component.h"
 #include "Manager.h"
-#include "SDLGame.h"
+#include "ServerSDLGame.h"
 
 class EntityManager;
 
 class Entity {
 public:
-	Entity(SDLGame *game, EntityManager* mngr);
+	Entity(ServerSDLGame *game, EntityManager* mngr);
 	virtual ~Entity();
 
 	EntityManager* getEntityMangr() {
@@ -50,7 +50,7 @@ public:
 		}
 	}
 private:
-	SDLGame *game_;
+	ServerSDLGame *game_;
 	EntityManager* mngr_;
 
 	std::vector<unique_ptr<Component>> components_;

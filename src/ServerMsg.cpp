@@ -18,7 +18,7 @@ namespace ServerMsg
 
         alloc_data(totalSize);
 
-        memset(_data, 0, size);
+        memset(_data, 0, totalSize);
 
         char* pointer = _data;
 
@@ -53,7 +53,7 @@ namespace ServerMsg
         if(shipTr == nullptr)
             to_bin_object(pointer, Vector2D(), -1, -1, 0);
         else
-            to_bin_object(pointer, shipTr->getPos(), shipTr->getWidth(), shipTr->getHeight(), shipTr->getRot());
+            to_bin_object(pointer, shipTr->getPos(), shipTr->getW(), shipTr->getH(), shipTr->getRot());
 
         pointer += objectInfoSize;
 
@@ -64,9 +64,11 @@ namespace ServerMsg
     void ServerMsg::to_bin_object(char* pointer, Vector2D pos, int width, int height, double rot) 
     {
         //Pos
-        memcpy(pointer, &pos.getX(), sizeof(double));
+        double pos_ = pos.getX();
+        memcpy(pointer, &pos_, sizeof(double));
         pointer += sizeof(double);
-        memcpy(pointer, &pos.getY(), sizeof(double));
+        pos_ = pos.getY();
+        memcpy(pointer, &pos_, sizeof(double));
         pointer += sizeof(double);
         //Size
         memcpy(pointer, &width, sizeof(int));
@@ -77,7 +79,7 @@ namespace ServerMsg
         memcpy(pointer, &rot, sizeof(double));
     }
     
-    ObjectInfo ServerMsg::from_bin_object(char* pointer) 
+    ServerMsg::ObjectInfo ServerMsg::from_bin_object(char* pointer) 
     {
         ObjectInfo obj;
 
