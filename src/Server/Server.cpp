@@ -11,8 +11,7 @@ constexpr float timeWait = 1000.0f/60.0f;
 
 Server::Server(const char* address, const char* port) :
 	socket(address, port),
-	clientSocket(nullptr),
-
+	clientSocket(nullptr)
 {
 	socket.bind();
 	game = new Game();
@@ -27,7 +26,7 @@ void Server::inputThread() {
 		ClientMsg::InputMsg msg;
 
 		Socket* clientSocket = (Socket*)1;
-		socket.recv(msg, clientSocket);
+		socket.recv(msg, *clientSocket);
 
 		if(msg.input == ClientMsg::InputId::_READY_){
 			//empezar partida (de momento)

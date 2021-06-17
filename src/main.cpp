@@ -1,56 +1,66 @@
-/*This source code copyrighted by Lazy Foo' Productions (2004-2020)
-and may not be redistributed without written permission.*/
+#include <iostream>
 
-//Using SDL and standard IO
-#include <SDL.h>
-#include <stdio.h>
+#include "Server.h"
+#include "Client.h"
 
-//Screen dimension constants
-const int SCREEN_WIDTH = 640;
-const int SCREEN_HEIGHT = 480;
+using namespace std;
 
-int main( int argc, char* args[] )
-{
-	//The window we'll be rendering to
-	SDL_Window* window = NULL;
+void server(const char* host, const char* port) {
+	try{
+		Server s(host, port);
+		s.start();
+	}
+	catch (std::string& e) { // catch errors thrown as strings
+		cerr << e << endl;
+	}
+	catch (const std::exception& e) { // catch other exceptions
+		cerr << e.what();
+	}
+	catch (...) {
+		cerr << "Caught and exception of unknown type ..";
+	}
+}
+
+void client(const char* host, const char* port, const char* nick = "Anonymous") {
 	
-	//The surface contained by the window
-	SDL_Surface* screenSurface = NULL;
-
-	//Initialize SDL
-	if( SDL_Init( SDL_INIT_EVERYTHING ) < 0 )
-	{
-		printf( "SDL could not initialize! SDL_Error: %s\n", SDL_GetError() );
-	}
-	else
-	{
-		//Create window
-		window = SDL_CreateWindow( "SDL Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN );
-		if( window == NULL )
-		{
-			printf( "Window could not be created! SDL_Error: %s\n", SDL_GetError() );
+	if (strlen(nick) > 16) cout << "Nickname is too long";
+	else {
+		try {
+			Client c(host, port, nick);
+			c.start();
 		}
-		else
-		{
-			//Get window surface
-			screenSurface = SDL_GetWindowSurface( window );
-
-			//Fill the surface white
-			SDL_FillRect( screenSurface, NULL, SDL_MapRGB( screenSurface->format, 0xFF, 0xFF, 0xFF ) );
-			
-			//Update the surface
-			SDL_UpdateWindowSurface( window );
-
-			//Wait two seconds
-			SDL_Delay( 2000 );
+		catch (std::string& e) { // catch errors thrown as strings
+			cerr << e << endl;
+		}
+		catch (const std::exception& e) { // catch other exceptions
+			cerr << e.what();
+		}
+		catch (...) {
+			cerr << "Caught and exception of unknown type ..";
 		}
 	}
+}
 
-	//Destroy window
-	SDL_DestroyWindow( window );
+int main(int argc, char **argv) {
 
-	//Quit SDL subsystems
-	SDL_Quit();
+	if (argc == 3 && strcmp(argv[1], "server") == 0) {
+		server(argv[2], argv[3]); // start in server mode
+	}
+	else if (argc == 4 && strcmp(argv[1], "client") == 0) {
+		client(argv[2], argv[3]); // start in client mode
+	}
+	else if (argc == 5 && strcmp(argv[1], "client") == 0) {
+		client(argv[2], argv[3], argv[4]); // start in client mode
+	}
+	else {
+		cout << "Usage: " << endl;
+		cout << "  " << argv[0] << " server host port " << endl;
+		cout << "  " << argv[0] << " client host port [nick]" << endl;
+		cout << endl;
+		cout << "Example:" << endl;
+		cout << "  " << argv[0] << " server localhost 2000" << endl;
+		cout << "  " << argv[0] << " client localhost 2000 Juan" << endl;
+	}
 
 	return 0;
 }

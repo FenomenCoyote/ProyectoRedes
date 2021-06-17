@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "Socket.h"
+#include "../Socket.h"
 #include "Game.h"
 
 class Server {

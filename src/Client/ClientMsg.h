@@ -17,9 +17,9 @@ namespace ClientMsg
         _LOGOUT_
     };
 
-    class InputMsg  {
+    class InputMsg : public Serializable {
         public:
-            InputMsg(InputId input = InputId::_READY): input(input){}
+            InputMsg(InputId input = InputId::_READY_): input(input){}
 
             void to_bin() override;
             int from_bin(char * bobj) override;

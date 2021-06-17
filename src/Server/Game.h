@@ -5,6 +5,7 @@
 #include "Manager.h"
 #include "SDLGame.h"
 #include "Socket.h"
+#include "ClientMsg.h"
 
 class AsteroidPool;
 class BulletsPool;
