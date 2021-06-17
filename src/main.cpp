@@ -43,7 +43,7 @@ void client(const char* host, const char* port, const char* nick = "Anonymous") 
 
 int main(int argc, char **argv) {
 
-	if (argc == 3 && strcmp(argv[1], "server") == 0) {
+	if (argc == 4 && strcmp(argv[1], "server") == 0) {
 		server(argv[2], argv[3]); // start in server mode
 	}
 	else if (argc == 4 && strcmp(argv[1], "client") == 0) {

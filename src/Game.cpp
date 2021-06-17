@@ -24,7 +24,11 @@
 
 #include "ClientMsg.h"
 
+#include <mutex>
+
 using namespace std;
+
+mutex mGame;
 
 constexpr float timeWait = 1000.0f/60.0f;
 
@@ -78,7 +82,7 @@ void Game::closeGame() {
 
 void Game::setPlayerInput(ClientMsg::InputId input) 
 {
-	//Pillar mutex
+	mGame.lock();
 	switch (input)
 	{
 	case ClientMsg::InputId::_AHEAD_:
@@ -97,7 +101,7 @@ void Game::setPlayerInput(ClientMsg::InputId input)
 		break;
 	}
 
-	//Liberar mutex
+	mGame.unlock();
 }
 
 
@@ -131,10 +135,10 @@ void Game::start(Socket* socket_, Socket* clientSocket_) {
 	while (!exit_) {
 		Uint32 startTime = game_->getTime();
 
-		//Pillar mutex
+		mGame.lock();
 		update();
 		sendWorldState();
-		//Liberar mutex
+		mGame.unlock();
 	
 		Uint32 frameTime = game_->getTime() - startTime;
 		if (frameTime < timeWait)

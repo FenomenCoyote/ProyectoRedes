@@ -10,13 +10,19 @@
 #include "ClientMsg.h"
 #include "ServerMsg.h"
 
+#include <thread>
+#include <mutex>
+
 using namespace std;
+
+mutex mClient;
 
 Client::Client(const char* address, const char* port, const char* nick) :
 		game_(nullptr), //
 		exit_(false), 
 		socket(address, port), 
-		inGame(false) {
+		inGame(false)
+{
 	initGame();
 }
 
@@ -42,6 +48,11 @@ void Client::closeGame() {
 void Client::start() {
 	exit_ = false;
 
+	//net thread
+	std::thread([this](){
+		this->netThread();
+	}).detach();
+
 	while (!exit_) {
 		Uint32 startTime = game_->getTime();
 
@@ -65,7 +76,7 @@ void Client::netThread()
 		ServerMsg::ServerMsg msg;
 		socket.recv(msg);
 
-		//Pillar mutex
+		mClient.lock();
 		if(inGame){
 			if(msg.type == ServerMsg::_ENDING_GAME){
 				inGame = false;
@@ -81,7 +92,7 @@ void Client::netThread()
 		else {
 			inGame = true;
 		}
-		//Soltar mutex
+		mClient.unlock();
 		
 	}
 }
@@ -144,8 +155,8 @@ void Client::render() {
 	SDL_RenderClear(game_->getRenderer());
 
 	//Render los objetos que tenga
+	mClient.lock();
 	if(inGame){
-		//Pillar mutex
 		for(ServerMsg::ServerMsg::ObjectInfo& o : asteroids){
 			SDL_Rect dest = RECT(o.posX, o.posY, o.width, o.height);
 			game_->getTextureMngr()->getTexture(Resources::Asteroid)->render(dest, o.rot);
@@ -156,8 +167,6 @@ void Client::render() {
 		}
 		SDL_Rect dest = RECT(ship.posX, ship.posY, ship.width, ship.height);
 		game_->getTextureMngr()->getTexture(Resources::Airplanes)->render(dest, ship.rot);
-
-		//Soltar mutex
 	}
 	else {
 		Texture *hitanykey = game_->getTextureMngr()->getTexture(
@@ -166,6 +175,7 @@ void Client::render() {
 				game_->getWindowWidth() / 2 - hitanykey->getWidth() / 2,
 				game_->getWindowHeight() - hitanykey->getHeight() - 50);
 	}
+	mClient.unlock();
 
 	SDL_RenderPresent(game_->getRenderer());
 }

@@ -45,8 +45,7 @@ void Server::inputThread() {
 }
 
 void Server::start() {
-
 	//Make InputThread
-
+	inputThread();
 }
 
