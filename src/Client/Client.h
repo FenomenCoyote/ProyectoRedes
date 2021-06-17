@@ -33,7 +33,6 @@ private:
 
 	vector<ServerMsg::WorldStateMsg::ObjectInfo> asteroids, bullets;
 	ServerMsg::WorldStateMsg::ObjectInfo ship;
-	uint8_t health;
 
 	const static int _WINDOW_WIDTH_ = 640;
 	const static int _WINDOW_HEIGHT_ = 480;

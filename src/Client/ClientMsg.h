@@ -8,78 +8,23 @@
 
 namespace ClientMsg
 {
-    enum ClientMsgId : uint8_t {
-        _LOGIN_,
-        _READY_,
-        _INPUT_,
-        _LOGOUT_
-    };
-
     enum InputId : uint8_t {
+        _READY_,
         _AHEAD_,
         _LEFT_,
         _RIGHT_,
-        _SHOOT_
+        _SHOOT_,
+        _LOGOUT_
     };
 
-    class Msg : public Serializable {
+    class InputMsg  {
         public:
-            ClientMsgId type;
-
-        protected:
-            Msg(ClientMsgId type) : type(type) {}
-    };
-
-    class LoginMsg : public Msg {
-        public:
-            LoginMsg(const char* nick_): Msg(ClientMsgId::_LOGIN_), nick(nick_){
-                assert(nick.length() < 16);
-            }
-
-            void to_bin() override;
-            int from_bin(char* bobj) override;
-
-        private:
-
-            std::string nick;
-
-            const size_t size = sizeof(ClientMsgId) + 16;
-    };
-
-    class ReadyMsg : public Msg {
-        public:
-            ReadyMsg(): Msg(ClientMsgId::_READY_){}
+            InputMsg(InputId input = InputId::_READY): input(input){}
 
             void to_bin() override;
             int from_bin(char * bobj) override;
 
-        private:
-
-            const size_t size = sizeof(ClientMsgId);
-    };
-
-    class InputMsg : public Msg {
-        public:
-            InputMsg(InputId input): Msg(ClientMsgId::_INPUT_), input(input){}
-
-            void to_bin() override;
-            int from_bin(char * bobj) override;
-
-        private:
             InputId input;
-            const size_t size = sizeof(ClientMsgId) + sizeof(InputId);
-    };
-
-    class LogoutMsg : public Msg {
-        public:
-            LogoutMsg(): Msg(ClientMsgId::_LOGOUT_){}
-
-            void to_bin() override;
-            int from_bin(char * bobj) override;
-
-        private:
-
-            const size_t size = sizeof(ClientMsgId);
     };
 
 }

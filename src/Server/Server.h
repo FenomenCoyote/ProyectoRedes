@@ -2,15 +2,8 @@
 
 #include <vector>
 
-#include "Manager.h"
-#include "SDLGame.h"
 #include "Socket.h"
-
-class AsteroidPool;
-class BulletsPool;
-class Transform;
-class Health;
-class FighterCtrl;
+#include "Game.h"
 
 class Server {
 
@@ -20,21 +13,10 @@ public:
 
 	// from SDLGame
 	void start();
-	void stop();
 
-	void playerInputThread();
+	void inputThread();
 
 private:
-	void waitUntilPlayerConnect();
-	void sendWorldState();
-	void initGame();
-	void closeGame();
-	void update();
-
-	SDLGame* game_;
-	EntityManager* entityManager_;
-	bool exit_;
-	bool start_;
 
 	//Socket 
 	Socket socket;
@@ -42,12 +24,7 @@ private:
 	//Info de sockets de los jugadores
 	Socket* clientSocket;
 
-	//Info del mundo para enviarla
-	AsteroidPool* asPool;
-	BulletsPool* bsPool;
-	Transform* shipTr;
-	FighterCtrl* shipCtrl;
-	Health* health;
+	Game* game;
 
 	const static int _WINDOW_WIDTH_ = 640;
 	const static int _WINDOW_HEIGHT_ = 480;

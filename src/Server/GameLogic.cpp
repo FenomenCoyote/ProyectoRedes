@@ -1,13 +1,14 @@
 #include "GameLogic.h"
 #include "Collisions.h"
 #include "Entity.h"
+#include "Game.h"
 
-GameLogic::GameLogic(AsteroidPool* asPool, BulletsPool* bsPool, Health* health, Transform* trCaza) :
+GameLogic::GameLogic(AsteroidPool* asPool, BulletsPool* bsPool, Transform* trCaza, Game* game) :
 		Component(ecs::GameLogic), //
 		asPool(asPool), //
 		bsPool(bsPool), //
-		health(health), //
 		trCaza(trCaza),
+		game(game),
 		running(true)
 {
 }
@@ -24,16 +25,16 @@ void GameLogic::update() {
 		for (auto& as : asPool->getPool()) {
 			//Si el asteroide esta activo
 			if (as->getInUse()) {
-				//Si colisiona con el caza, se pausa el juego, se resta una vida y se pone al caza en la posicion original
+				//Si colisiona con el caza
 				if (Collisions::collidesWithRotation(as->getPos(), as->getWidth(), as->getHeight(), as->getRot(),
 					trCaza->getPos(), trCaza->getW(), trCaza->getH(), trCaza->getRot())) {
 					asPool->disableAll();
 					bsPool->disableAll();
-					health->subtractHp();	
 					trCaza->setPos(game_->getWindowWidth() / 2 - trCaza->getW() / 2, game_->getWindowHeight() / 2 - trCaza->getH() / 2);
 					trCaza->setVel(0, 0);
 					trCaza->setRot(0);			
 					running = false;
+					game->playerDied();
 				}
 
 				//Se chequea si el asteroide colisiona con una bala

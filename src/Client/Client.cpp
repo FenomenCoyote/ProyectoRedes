@@ -4,12 +4,11 @@
 
 #include "InputHandler.h"
 
-#include "SDLGame.h"
+#include "Client/SDLGame.h"
 
 #include "SDL_macros.h"
 #include "ClientMsg.h"
 #include "ServerMsg.h"
-
 
 using namespace std;
 
@@ -65,36 +64,27 @@ void Client::stop() {
 void Client::netThread() 
 {
 	while(1){
+		ServerMsg::ServerMsg msg;
+		socket.recv(msg);
+
 		//Pillar mutex
 		if(inGame){
-			//Soltar mutex
-			ServerMsg::Msg msg;
-			socket.recv(msg);
-
-			//Pillar mutex
-			if(msg.type == ServerMsg::EndingGameMsg){
+			if(msg.type == ServerMsg::_ENDING_GAME){
 				inGame = false;
 			} 
-			else if(msg.type == ServerMsg::WorldStateMsg){
-				msg = static_cast<ServerMsg::WorldStateMsg>(msg);
-				asteroids = msg.
-
-
+			else if(msg.type == ServerMsg::_WORLD_STATE){
+				asteroids = msg.asteroids;
+				bullets = msg.bullets;
+				ship = msg.ship;
 			} 
 			else 
-				assert(false);
-
-			//Liberar mutex
+				assert(false);	
 		}
 		else {
-			//Soltar mutex
-			ServerMsg::StartingGameMsg msg;
-			socket.recv(msg);
-
-			//Pillar mutex
 			inGame = true;
-			//Soltar mutex
 		}
+		//Soltar mutex
+		
 	}
 }
 
@@ -107,7 +97,7 @@ void Client::handleInput() {
 	if (ih->keyDownEvent()) {
 		if (ih->isKeyDown(SDLK_ESCAPE)) {
 			exit_ = true;
-			ClientMsg::LogoutMsg msg;
+			ClientMsg::InputMsg msg(ClientMsg::_LOGOUT_);
 			socket.send(msg, socket);
 		}
 
@@ -121,14 +111,15 @@ void Client::handleInput() {
 			}
 		}
 
+		if (ih->isKeyDown(SDLK_SPACE)) {
+			inGame = true;
+			ClientMsg::InputMsg msg(ClientMsg::_READY_;
+			socket.send(msg, socket);
+		}
+
 		if(!inGame)
 			return;
 
-		if (ih->isKeyDown(SDLK_SPACE) && !inGame) {
-			inGame = true;
-			ClientMsg::ReadyMsg msg;
-			socket.send(msg, socket);
-		}
 		if (ih->isKeyDown(SDLK_UP)) {
 			ClientMsg::InputMsg msg(ClientMsg::InputId::_AHEAD_);
 			socket.send(msg, socket);
@@ -156,10 +147,26 @@ void Client::render() {
 
 	//Render los objetos que tenga
 	if(inGame){
+		//Pillar mutex
+		for(ServerMsg::ServerMsg::ObjectInfo& o : asteroids){
+			SDL_Rect dest = RECT(o.posX, o.posY, o.width, o.height);
+			game_->getTextureMngr()->getTexture(Resources::Asteroid)->render(dest, o.rotation);
+		}
+		for(ServerMsg::ServerMsg::ObjectInfo& o : bullets){
+			SDL_Rect dest = RECT(o.posX, o.posY, o.width, o.height);
+			game_->getTextureMngr()->getTexture(Resources::WhiteRect)->render(dest, o.rotation);
+		}
+		SDL_Rect dest = RECT(o.posX, o.posY, o.width, o.height);
+		game_->getTextureMngr()->getTexture(Resources::Airplanes)->render(dest, o.rotation);
 
+		//Soltar mutex
 	}
 	else {
-
+		Texture *hitanykey = game_->getTextureMngr()->getTexture(
+				Resources::PressAnyKey);
+		hitanykey->render(
+				game_->getWindowWidth() / 2 - hitanykey->getWidth() / 2,
+				game_->getWindowHeight() - hitanykey->getHeight() - 50);
 	}
 
 	SDL_RenderPresent(game_->getRenderer());

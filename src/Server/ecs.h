@@ -8,7 +8,6 @@ using CmpIdType = std::size_t;
 enum CmpId : CmpIdType {
 	Transform = 0,
 	GameLogic,
-	Health,
 	Gun,
 	BulletsPool,
 	FighterCtrl,
