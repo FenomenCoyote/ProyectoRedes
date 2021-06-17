@@ -10,6 +10,7 @@
 #include "ClientMsg.h"
 #include "ServerMsg.h"
 
+#include <iostream>
 #include <thread>
 #include <mutex>
 
@@ -76,6 +77,8 @@ void Client::netThread()
 		ServerMsg::ServerMsg msg;
 		socket.recv(msg);
 
+		cout << "Receiving world state" << endl;
+
 		mClient.lock();
 		if(inGame){
 			if(msg.type == ServerMsg::_ENDING_GAME){
@@ -108,6 +111,8 @@ void Client::handleInput() {
 			exit_ = true;
 			ClientMsg::InputMsg msg(ClientMsg::_LOGOUT_);
 			socket.send(msg, socket);
+
+			cout << "Sending logout request" << endl;
 		}
 
 		if (ih->isKeyDown(SDLK_f)) {
@@ -120,10 +125,14 @@ void Client::handleInput() {
 			}
 		}
 
-		if (ih->isKeyDown(SDLK_SPACE)) {
+		if (!inGame && ih->isKeyDown(SDLK_SPACE)) {
 			inGame = true;
 			ClientMsg::InputMsg msg(ClientMsg::_READY_);
 			socket.send(msg, socket);
+
+			cout << "Sending ready request" << endl;
+
+			return;
 		}
 
 		if(!inGame)
@@ -132,18 +141,26 @@ void Client::handleInput() {
 		if (ih->isKeyDown(SDLK_UP)) {
 			ClientMsg::InputMsg msg(ClientMsg::InputId::_AHEAD_);
 			socket.send(msg, socket);
+
+			cout << "Sending up input" << endl;
 		}
 		if (ih->isKeyDown(SDLK_LEFT)) {
 			ClientMsg::InputMsg msg(ClientMsg::InputId::_LEFT_);
 			socket.send(msg, socket);
+
+			cout << "Sending left input" << endl;
 		}
 		else if (ih->isKeyDown(SDLK_RIGHT)) {
 			ClientMsg::InputMsg msg(ClientMsg::InputId::_RIGHT_);
 			socket.send(msg, socket);
+
+			cout << "Sending right input" << endl;
 		}
 		if (ih->isKeyDown(SDLK_SPACE)) {
 			ClientMsg::InputMsg msg(ClientMsg::InputId::_SHOOT_);
 			socket.send(msg, socket);
+
+			cout << "Sending shoot input" << endl;
 		}
 	}
 

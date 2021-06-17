@@ -44,7 +44,7 @@ public:
 		return SDL_GetTicks();
 	}
 
-	inline jute::jValue getCfg() { return cfg; }
+	inline jute::jValue& getCfg() { return cfg; }
 
 private:
 	ServerSDLGame(int width, int height);

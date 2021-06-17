@@ -4,6 +4,7 @@
 #include "ClientMsg.h"
 
 #include <assert.h>
+#include <iostream>
 
 using namespace std;
 
@@ -22,11 +23,13 @@ Server::~Server() {
 }
 
 void Server::inputThread() {
-	while(1){
+	while(true){
 		ClientMsg::InputMsg msg;
 
 		Socket* clientSocket = (Socket*)1;
 		socket.recv(msg, clientSocket);
+
+		cout << msg.input << flush << endl;
 
 		if(msg.input == ClientMsg::InputId::_READY_){
 			//empezar partida (de momento)
@@ -35,10 +38,10 @@ void Server::inputThread() {
 		else if(msg.input == ClientMsg::InputId::_LOGOUT_){
 			//parar partida (de momento)
 			delete game; game = nullptr;
+			break;
 		}
 		else {
 			//Borro la memoria auxiliar
-			delete clientSocket; clientSocket = nullptr;
 			game->setPlayerInput(msg.input);
 		}
 	}
