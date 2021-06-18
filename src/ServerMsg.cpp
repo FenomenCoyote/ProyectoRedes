@@ -10,7 +10,7 @@ namespace ServerMsg
 
         totalSize += sizeof(uint8_t) + numOfAsteroids * objectInfoSize; //Asteroids
         totalSize += sizeof(uint8_t) + numOfBullets * objectInfoSize; //Bullets
-        totalSize += objectInfoSize; //Ship
+        totalSize += 2 * objectInfoSize; //Ship1 + Ship2
         totalSize += sizeof(SoundId); //Sound
 
         alloc_data(totalSize);
@@ -47,10 +47,18 @@ namespace ServerMsg
         }
 
         //Ship
-        if(shipTr == nullptr)
+        if(shipTr1 == nullptr)
             to_bin_object(pointer, Vector2D(), -1, -1, 0);
         else
-            to_bin_object(pointer, shipTr->getPos(), shipTr->getW(), shipTr->getH(), shipTr->getRot());
+            to_bin_object(pointer, shipTr1->getPos(), shipTr1->getW(), shipTr1->getH(), shipTr1->getRot());
+
+        pointer += objectInfoSize;
+
+        //Ship2
+        if(shipTr2 == nullptr)
+            to_bin_object(pointer, Vector2D(), -1, -1, 0);
+        else
+            to_bin_object(pointer, shipTr2->getPos(), shipTr2->getW(), shipTr2->getH(), shipTr2->getRot());
 
         pointer += objectInfoSize;
 
@@ -125,7 +133,10 @@ namespace ServerMsg
         }
 
         //Ship
-        ship = from_bin_object(pointer);
+        ship1 = from_bin_object(pointer);
+        pointer += objectInfoSize;
+
+        ship2 = from_bin_object(pointer);
         pointer += objectInfoSize;
 
         //Sound

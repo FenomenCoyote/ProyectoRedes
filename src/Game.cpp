@@ -141,8 +141,6 @@ void Game::setPlayerInput(ClientMsg::InputId input, int player)
 
 
 void Game::sendWorldState(){
-	if(clientSocket == nullptr)
-		return;
 		
 	//Crear info
 	if(exit_ != PLAYING_){
@@ -154,18 +152,19 @@ void Game::sendWorldState(){
 		socket.send(msg, *clientSocket_p2.get());
 	}
 	else {
-		ServerMsg::ServerMsg msg(asPool, bsPool, shipTr);
+		ServerMsg::ServerMsg msg(asPool, bsPool, shipTr_p1, shipTr_p2);
 		msg.type = ServerMsg::_WORLD_STATE;
 		if(asPool->anyColision())
 			msg.setSound(ServerMsg::SoundId::_ASTEROID_COLLISION_);
 
 		//Mandar info a los dos jugadores (de momento solo a un jugador)
-		socket.send(msg, *clientSocket);
+		socket.send(msg, *clientSocket_p1.get());
+		socket.send(msg, *clientSocket_p2.get());
 	}
 }
 
 void Game::start() {
-	exit_ = false;
+	exit_ = PLAYING_;
 
 	asPool->generateAsteroids(game_->getCfg()["gameLogic"]["asteroidsToGenerate"].as_int());
 

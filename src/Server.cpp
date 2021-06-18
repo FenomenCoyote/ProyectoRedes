@@ -32,8 +32,8 @@ void Server::start() {
 		if(msg.input == ClientMsg::InputId::_READY_ && game == nullptr && clients.size() < 2){
 			clients.push_back(std::unique_ptr<Socket>(std::move(clientSocket)));
 			if(clients.size() == 2){
-				game = new Game(socket);
-				game->start(clients[0], clients[1]);
+				game = new Game(socket, clients[0], clients[1]);
+				game->start();
 			}
 		}
 		else if(msg.input == ClientMsg::InputId::_LOGOUT_){

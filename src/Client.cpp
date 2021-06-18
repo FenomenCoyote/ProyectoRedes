@@ -88,7 +88,8 @@ void Client::netThread()
 			else if(msg.type == ServerMsg::_WORLD_STATE){
 				asteroids = msg.asteroids;
 				bullets = msg.bullets;
-				ship = msg.ship;
+				ship1 = msg.ship1;
+				ship2 = msg.ship2;
 				if(msg.sound == ServerMsg::_ASTEROID_COLLISION_)
 					game_->getAudioMngr()->playChannel(Resources::AudioId::Explosion, 0);
 			} 
@@ -175,9 +176,13 @@ void Client::render() {
 			SDL_Rect dest = RECT(o.posX, o.posY, o.width, o.height);
 			game_->getTextureMngr()->getTexture(Resources::WhiteRect)->render(dest, o.rot);
 		}
-		SDL_Rect dest = RECT(ship.posX, ship.posY, ship.width, ship.height);
+		SDL_Rect dest = RECT(ship1.posX, ship1.posY, ship1.width, ship1.height);
 		SDL_Rect src = RECT(47, 90, 207, 250);
-		game_->getTextureMngr()->getTexture(Resources::Airplanes)->render(dest, ship.rot, src);
+		game_->getTextureMngr()->getTexture(Resources::Airplanes)->render(dest, ship1.rot, src);
+
+		dest = RECT(ship2.posX, ship2.posY, ship2.width, ship2.height);
+		src = RECT(305, 616, 207, 250);
+		game_->getTextureMngr()->getTexture(Resources::Airplanes)->render(dest, ship2.rot, src);
 	}
 	else {
 		Texture *hitanykey = game_->getTextureMngr()->getTexture(

@@ -37,11 +37,11 @@ namespace ServerMsg
             };
 
         public:
-            ServerMsg(): ServerMsg(nullptr, nullptr, nullptr) {}
+            ServerMsg(): ServerMsg(nullptr, nullptr, nullptr, nullptr) {}
 
-            ServerMsg(AsteroidPool* asPool, BulletsPool* buPool, Transform* ship): Msg(ServerMsgId::_WORLD_STATE),
-                asteroids(), bullets(), ship(), sound(SoundId::_NONE),
-                asPool(asPool), buPool(buPool), shipTr(ship) {}
+            ServerMsg(AsteroidPool* asPool, BulletsPool* buPool, Transform* ship1, Transform* ship2): Msg(ServerMsgId::_WORLD_STATE),
+                asteroids(), bullets(), ship1(), ship2(), sound(SoundId::_NONE),
+                asPool(asPool), buPool(buPool), shipTr1(ship1), shipTr2(ship2) {}
 
             void to_bin() override;
             int from_bin(char* bobj) override;
@@ -49,7 +49,7 @@ namespace ServerMsg
             void setSound(SoundId sound_) { sound = sound_;}
             
             std::vector<ObjectInfo> asteroids, bullets;
-            ObjectInfo ship;
+            ObjectInfo ship1, ship2;
             SoundId sound;
 
         private:
@@ -58,6 +58,6 @@ namespace ServerMsg
 
             AsteroidPool* asPool;
             BulletsPool* buPool;
-            Transform* shipTr;  
+            Transform* shipTr1, *shipTr2;  
     };
 }
