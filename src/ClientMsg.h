@@ -19,7 +19,7 @@ namespace ClientMsg
 
     class InputMsg : public Serializable {
         public:
-            InputMsg(InputId input = InputId::_READY_): input(input){}
+            InputMsg(InputId input_): input(input_){}
 
             void to_bin() override;
             int from_bin(char * bobj) override;

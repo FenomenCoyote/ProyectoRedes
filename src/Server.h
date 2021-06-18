@@ -11,18 +11,12 @@ public:
 	Server(const char* address, const char* port);
 	virtual ~Server();
 
-	// from ServerSDLGame
 	void start();
-
-	void inputThread();
 
 private:
 
 	//Socket 
 	Socket socket;
-
-	//Info de sockets de los jugadores
-	Socket* clientSocket;
 
 	Game* game;
 

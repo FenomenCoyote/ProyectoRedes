@@ -61,6 +61,12 @@ public:
      */
     Socket(const char * address, const char * port);
 
+    Socket(const Socket& so){
+        sd = so.sd;
+        sa = so.sa;
+        sa_len = so.sa_len;
+    }
+
     /**
      *  Inicializa un Socket copiando los parámetros del socket
      */

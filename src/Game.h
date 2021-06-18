@@ -15,15 +15,18 @@ class FighterCtrl;
 class Game {
 
 public:
-	Game();
+	Game(Socket socket_);
 	virtual ~Game();
 
 	// from ServerSDLGame
-	void start(Socket* socket_, Socket* clientSocket_);
+	void start(Socket* clientSocket_);
 	void stop();
 
 	void playerDied();
+	
+	void netThread();
 	void setPlayerInput(ClientMsg::InputId input);
+	
 
 private:
 	void sendWorldState();
@@ -36,7 +39,7 @@ private:
 	bool exit_;
 
 	//Socket 
-	Socket* socket;
+	Socket socket;
 
 	//Info de sockets de los jugadores
 	Socket* clientSocket;

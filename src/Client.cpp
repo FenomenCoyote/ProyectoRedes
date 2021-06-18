@@ -16,6 +16,8 @@
 
 using namespace std;
 
+constexpr float time_wait = 1000.f/60.0f;
+
 mutex mClient;
 
 Client::Client(const char* address, const char* port, const char* nick) :
@@ -61,8 +63,8 @@ void Client::start() {
 		render();
 
 		Uint32 frameTime = game_->getTime() - startTime;
-		if (frameTime < 10)
-			SDL_Delay(10 - frameTime);
+		if (frameTime < time_wait)
+			SDL_Delay(time_wait - frameTime);
 	}
 }
 
@@ -77,23 +79,25 @@ void Client::netThread()
 		ServerMsg::ServerMsg msg;
 		socket.recv(msg);
 
-		cout << "Receiving world state" << endl;
-
 		mClient.lock();
 		if(inGame){
 			if(msg.type == ServerMsg::_ENDING_GAME){
 				inGame = false;
+				game_->getAudioMngr()->pauseMusic();
 			} 
 			else if(msg.type == ServerMsg::_WORLD_STATE){
 				asteroids = msg.asteroids;
 				bullets = msg.bullets;
 				ship = msg.ship;
+				if(msg.sound == ServerMsg::_ASTEROID_COLLISION_)
+					game_->getAudioMngr()->playChannel(Resources::AudioId::Explosion, 0);
 			} 
 			else 
 				assert(false);	
 		}
 		else {
 			inGame = true;
+			game_->getAudioMngr()->resumeMusic();
 		}
 		mClient.unlock();
 		
@@ -112,7 +116,6 @@ void Client::handleInput() {
 			ClientMsg::InputMsg msg(ClientMsg::_LOGOUT_);
 			socket.send(msg, socket);
 
-			cout << "Sending logout request" << endl;
 		}
 
 		if (ih->isKeyDown(SDLK_f)) {
@@ -130,8 +133,6 @@ void Client::handleInput() {
 			ClientMsg::InputMsg msg(ClientMsg::_READY_);
 			socket.send(msg, socket);
 
-			cout << "Sending ready request" << endl;
-
 			return;
 		}
 
@@ -141,26 +142,19 @@ void Client::handleInput() {
 		if (ih->isKeyDown(SDLK_UP)) {
 			ClientMsg::InputMsg msg(ClientMsg::InputId::_AHEAD_);
 			socket.send(msg, socket);
-
-			cout << "Sending up input" << endl;
 		}
 		if (ih->isKeyDown(SDLK_LEFT)) {
 			ClientMsg::InputMsg msg(ClientMsg::InputId::_LEFT_);
 			socket.send(msg, socket);
-
-			cout << "Sending left input" << endl;
 		}
 		else if (ih->isKeyDown(SDLK_RIGHT)) {
 			ClientMsg::InputMsg msg(ClientMsg::InputId::_RIGHT_);
 			socket.send(msg, socket);
-
-			cout << "Sending right input" << endl;
 		}
 		if (ih->isKeyDown(SDLK_SPACE)) {
 			ClientMsg::InputMsg msg(ClientMsg::InputId::_SHOOT_);
 			socket.send(msg, socket);
-
-			cout << "Sending shoot input" << endl;
+			game_->getAudioMngr()->playChannel(Resources::AudioId::GunShot, 0);
 		}
 	}
 
@@ -174,16 +168,17 @@ void Client::render() {
 	//Render los objetos que tenga
 	mClient.lock();
 	if(inGame){
-		for(ServerMsg::ServerMsg::ObjectInfo& o : asteroids){
+		for(const ServerMsg::ServerMsg::ObjectInfo& o : asteroids){
 			SDL_Rect dest = RECT(o.posX, o.posY, o.width, o.height);
 			game_->getTextureMngr()->getTexture(Resources::Asteroid)->render(dest, o.rot);
 		}
-		for(ServerMsg::ServerMsg::ObjectInfo& o : bullets){
+		for(const ServerMsg::ServerMsg::ObjectInfo& o : bullets){
 			SDL_Rect dest = RECT(o.posX, o.posY, o.width, o.height);
 			game_->getTextureMngr()->getTexture(Resources::WhiteRect)->render(dest, o.rot);
 		}
 		SDL_Rect dest = RECT(ship.posX, ship.posY, ship.width, ship.height);
-		game_->getTextureMngr()->getTexture(Resources::Airplanes)->render(dest, ship.rot);
+		SDL_Rect src = RECT(47, 90, 207, 250);
+		game_->getTextureMngr()->getTexture(Resources::Airplanes)->render(dest, ship.rot, src);
 	}
 	else {
 		Texture *hitanykey = game_->getTextureMngr()->getTexture(

@@ -5,11 +5,8 @@ namespace ServerMsg
     void ServerMsg::to_bin() 
     { 
         size_t totalSize = sizeof(size_t);
-        uint8_t numOfAsteroids = asPool->getNumOfAsteroid();
-        uint8_t numOfBullets = buPool->getNumOfBullets();
-
-        if(asPool == nullptr) numOfAsteroids = 0;
-        if(buPool == nullptr) numOfBullets = 0;
+        uint8_t numOfAsteroids = (asPool == nullptr) ? 0 : asPool->getNumOfAsteroid();
+        uint8_t numOfBullets = (buPool == nullptr) ? 0 :buPool->getNumOfBullets();
 
         totalSize += sizeof(uint8_t) + numOfAsteroids * objectInfoSize; //Asteroids
         totalSize += sizeof(uint8_t) + numOfBullets * objectInfoSize; //Bullets

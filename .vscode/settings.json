@@ -16,6 +16,7 @@
         "new": "cpp",
         "functional": "cpp",
         "mutex": "cpp",
-        "ostream": "cpp"
+        "ostream": "cpp",
+        "iostream": "cpp"
     }
 }

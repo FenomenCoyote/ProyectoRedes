@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/game.exe",
-            "args": [],
+            "args": ["server", "127.0.0.1", "7878"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

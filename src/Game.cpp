@@ -25,6 +25,7 @@
 #include "ClientMsg.h"
 
 #include <mutex>
+#include <thread>
 
 using namespace std;
 
@@ -32,11 +33,11 @@ mutex mGame;
 
 constexpr float timeWait = 1000.0f/60.0f;
 
-Game::Game() :
+Game::Game(Socket socket_) :
 		game_(nullptr), //
 		entityManager_(nullptr), //
 		exit_(false), 
-		socket(nullptr),
+		socket(socket_),
 		clientSocket(nullptr),
 		asPool(nullptr), bsPool(nullptr),
 		shipTr(nullptr), shipCtrl(nullptr)
@@ -80,6 +81,18 @@ void Game::closeGame() {
 	delete entityManager_;
 }
 
+void Game::netThread(){
+	while(true){
+		ClientMsg::InputMsg msg(ClientMsg::InputId::_AHEAD_);
+
+		socket.recv(msg);
+
+		if(msg.input != ClientMsg::InputId::_READY_ && msg.input != ClientMsg::InputId::_LOGOUT_){
+			setPlayerInput(msg.input);
+		}
+	}
+}
+
 void Game::setPlayerInput(ClientMsg::InputId input) 
 {
 	mGame.lock();
@@ -112,25 +125,34 @@ void Game::sendWorldState(){
 	//Crear info
 	if(exit_){
 		ServerMsg::ServerMsg msg;
+		msg.type = ServerMsg::_ENDING_GAME;
 
 		//Mandar info a los dos jugadores (de momento solo a un jugador)
-		socket->send(msg, *clientSocket);
+		socket.send(msg, *clientSocket);
 	}
 	else {
 		ServerMsg::ServerMsg msg(asPool, bsPool, shipTr);
+		msg.type = ServerMsg::_WORLD_STATE;
 		if(asPool->anyColision())
 			msg.setSound(ServerMsg::SoundId::_ASTEROID_COLLISION_);
 
 		//Mandar info a los dos jugadores (de momento solo a un jugador)
-		socket->send(msg, *clientSocket);
+		socket.send(msg, *clientSocket);
 	}
 }
 
-void Game::start(Socket* socket_, Socket* clientSocket_) {
+void Game::start(Socket* clientSocket_) {
 	exit_ = false;
 
-	socket = socket_;
 	clientSocket = clientSocket_;
+
+	asPool->generateAsteroids(game_->getCfg()["gameLogic"]["asteroidsToGenerate"].as_int());
+
+	//net thread
+	std::thread([this](){
+		this->netThread();
+	}).detach();
+
 
 	while (!exit_) {
 		Uint32 startTime = game_->getTime();
