@@ -12,6 +12,7 @@ constexpr float timeWait = 1000.0f/60.0f;
 
 Server::Server(const char* address, const char* port) :
 	socket(address, port),
+	clients(),
 	game(nullptr)
 {
 	socket.bind();
@@ -22,16 +23,18 @@ Server::~Server() {
 }
 
 void Server::start() {
-	while(true){
-		ClientMsg::InputMsg msg(ClientMsg::InputId::_AHEAD_);
+	ClientMsg::InputMsg msg(ClientMsg::InputId::_AHEAD_);
 
+	while(true){
 		Socket* clientSocket = (Socket*)1;
 		socket.recv(msg, clientSocket);
 		
-		if(msg.input == ClientMsg::InputId::_READY_ && game == nullptr){
-			//empezar partida (de momento)
-			game = new Game(socket);
-			game->start(clientSocket);
+		if(msg.input == ClientMsg::InputId::_READY_ && game == nullptr && clients.size() < 2){
+			clients.push_back(std::unique_ptr<Socket>(std::move(clientSocket)));
+			if(clients.size() == 2){
+				game = new Game(socket);
+				game->start(clients[0], clients[1]);
+			}
 		}
 		else if(msg.input == ClientMsg::InputId::_LOGOUT_){
 			delete game; game = nullptr;

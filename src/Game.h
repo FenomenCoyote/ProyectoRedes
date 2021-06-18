@@ -6,6 +6,7 @@
 #include "ServerSDLGame.h"
 #include "Socket.h"
 #include "ClientMsg.h"
+#include <memory>
 
 class AsteroidPool;
 class BulletsPool;
@@ -15,20 +16,25 @@ class FighterCtrl;
 class Game {
 
 public:
-	Game(Socket socket_);
+	Game(Socket socket_, std::unique_ptr<Socket>& clientSocket_p1_, std::unique_ptr<Socket>& clientSocket_p2_);
 	virtual ~Game();
 
 	// from ServerSDLGame
-	void start(Socket* clientSocket_);
-	void stop();
+	void start();
 
-	void playerDied();
+	void playerDied(int player);
 	
 	void netThread();
-	void setPlayerInput(ClientMsg::InputId input);
+	void setPlayerInput(ClientMsg::InputId input, int player);
 	
-
 private:
+
+	enum GameState : uint8_t{
+		PLAYING_,
+		PLAYER1_WON,
+		PLAYER2_WON
+	};
+
 	void sendWorldState();
 	void initGame();
 	void closeGame();
@@ -36,19 +42,20 @@ private:
 
 	ServerSDLGame* game_;
 	EntityManager* entityManager_;
-	bool exit_;
+	Game::GameState exit_;
 
 	//Socket 
 	Socket socket;
 
 	//Info de sockets de los jugadores
-	Socket* clientSocket;
+	std::unique_ptr<Socket>& clientSocket_p1;
+	std::unique_ptr<Socket>& clientSocket_p2;
 
 	//Info del mundo para enviarla
 	AsteroidPool* asPool;
 	BulletsPool* bsPool;
-	Transform* shipTr;
-	FighterCtrl* shipCtrl;
+	Transform* shipTr_p1, *shipTr_p2;
+	FighterCtrl* shipCtrl_p1, *shipCtrl_p2;
 
 	const static int _WINDOW_WIDTH_ = 640;
 	const static int _WINDOW_HEIGHT_ = 480;

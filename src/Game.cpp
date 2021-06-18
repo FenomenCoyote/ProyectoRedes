@@ -33,14 +33,14 @@ mutex mGame;
 
 constexpr float timeWait = 1000.0f/60.0f;
 
-Game::Game(Socket socket_) :
+Game::Game(Socket socket_, std::unique_ptr<Socket>& clientSocket_p1_, std::unique_ptr<Socket>& clientSocket_p2_) :
 		game_(nullptr), //
 		entityManager_(nullptr), //
-		exit_(false), 
+		exit_(GameState::PLAYING_), 
 		socket(socket_),
-		clientSocket(nullptr),
+		clientSocket_p1(clientSocket_p1_), clientSocket_p2(clientSocket_p2_),
 		asPool(nullptr), bsPool(nullptr),
-		shipTr(nullptr), shipCtrl(nullptr)
+		shipTr_p1(nullptr), shipTr_p2(nullptr), shipCtrl_p1(nullptr), shipCtrl_p2(nullptr)
 {
 	initGame();
 }
@@ -65,16 +65,23 @@ void Game::initGame() {
 	bsPool = bullets->addComponent<BulletsPool>();
 	bullets->addComponent<BulletsMotion>();
 
-	//Se crea el caza
+	//Se crea el caza p1
 	Entity* ship_ = entityManager_->addEntity();
-	shipTr = ship_->addComponent<Transform>(Vector2D(game_->getWindowWidth()/2, game_->getWindowHeight() / 2), Vector2D(), 50, 50, 0);
+	shipTr_p1 = ship_->addComponent<Transform>(Vector2D(game_->getWindowWidth()/2 - 50, game_->getWindowHeight() / 2), Vector2D(), 50, 50, 0);
 	ship_->addComponent<Gun>(bsPool, 250);
-	shipCtrl = ship_->addComponent<FighterCtrl>();
+	shipCtrl_p1 = ship_->addComponent<FighterCtrl>();
+	ship_->addComponent<FighterMotion>();
+
+	//Se crea el caza p2
+	ship_ = entityManager_->addEntity();
+	shipTr_p2 = ship_->addComponent<Transform>(Vector2D(game_->getWindowWidth()/2 + 50, game_->getWindowHeight() / 2), Vector2D(), 50, 50, 0);
+	ship_->addComponent<Gun>(bsPool, 250);
+	shipCtrl_p2 = ship_->addComponent<FighterCtrl>();
 	ship_->addComponent<FighterMotion>();
 	
 	//Se crea el gameManager
 	Entity *gameManager = entityManager_->addEntity();
-	gameManager->addComponent<GameLogic>(asPool, bsPool, shipTr, this);
+	gameManager->addComponent<GameLogic>(asPool, bsPool, shipTr_p1, shipTr_p2, this);
 }
 
 void Game::closeGame() {
@@ -82,38 +89,53 @@ void Game::closeGame() {
 }
 
 void Game::netThread(){
+	ClientMsg::InputMsg msg(ClientMsg::InputId::_AHEAD_);
 	while(true){
-		ClientMsg::InputMsg msg(ClientMsg::InputId::_AHEAD_);
+		Socket* sd = (Socket*)1;
 
-		socket.recv(msg);
+		socket.recv(msg, sd);
 
-		if(msg.input != ClientMsg::InputId::_READY_ && msg.input != ClientMsg::InputId::_LOGOUT_){
-			setPlayerInput(msg.input);
-		}
+		int player = (*sd == *clientSocket_p1.get()) ? 0 : 1;
+
+		if(msg.input == ClientMsg::InputId::_LOGOUT_)
+			exit_ = (player == 0) ? PLAYER2_WON : PLAYER1_WON;
+		else 
+			setPlayerInput(msg.input, player);
 	}
 }
 
-void Game::setPlayerInput(ClientMsg::InputId input) 
+void Game::setPlayerInput(ClientMsg::InputId input, int player) 
 {
 	mGame.lock();
 	switch (input)
 	{
 	case ClientMsg::InputId::_AHEAD_:
-		shipCtrl->goAhead();
+		if(player == 0)
+			shipCtrl_p1->goAhead();
+		else 
+			shipCtrl_p2->goAhead();
 		break;
 	case ClientMsg::InputId::_LEFT_:
-		shipCtrl->turnLeft();
+		if(player == 0)
+			shipCtrl_p1->turnLeft();
+		else 
+			shipCtrl_p2->turnLeft();
 		break;
 	case ClientMsg::InputId::_RIGHT_:
-		shipCtrl->turnRight();
+		if(player == 0)
+			shipCtrl_p1->turnRight();
+		else 
+			shipCtrl_p2->turnRight();
 		break;
 	case ClientMsg::InputId::_SHOOT_:
-		shipCtrl->shoot();
+		if(player == 0)
+			shipCtrl_p1->shoot();
+		else 
+			shipCtrl_p2->shoot();
 		break;
 	default:
 		break;
 	}
-
 	mGame.unlock();
 }
 
@@ -123,12 +145,13 @@ void Game::sendWorldState(){
 		return;
 		
 	//Crear info
-	if(exit_){
+	if(exit_ != PLAYING_){
 		ServerMsg::ServerMsg msg;
 		msg.type = ServerMsg::_ENDING_GAME;
 
 		//Mandar info a los dos jugadores (de momento solo a un jugador)
-		socket.send(msg, *clientSocket);
+		socket.send(msg, *clientSocket_p1.get());
+		socket.send(msg, *clientSocket_p2.get());
 	}
 	else {
 		ServerMsg::ServerMsg msg(asPool, bsPool, shipTr);
@@ -141,20 +164,23 @@ void Game::sendWorldState(){
 	}
 }
 
-void Game::start(Socket* clientSocket_) {
+void Game::start() {
 	exit_ = false;
-
-	clientSocket = clientSocket_;
 
 	asPool->generateAsteroids(game_->getCfg()["gameLogic"]["asteroidsToGenerate"].as_int());
 
-	//net thread
+	//net thread 1
+	std::thread([this](){
+		this->netThread();
+	}).detach();
+
+	//net thread 2
 	std::thread([this](){
 		this->netThread();
 	}).detach();
 
 
-	while (!exit_) {
+	while (exit_ == PLAYING_) {
 		Uint32 startTime = game_->getTime();
 
 		mGame.lock();
@@ -169,13 +195,9 @@ void Game::start(Socket* clientSocket_) {
 	}
 }
 
-void Game::stop() {
-	exit_ = true;
-}
-
-void Game::playerDied() 
+void Game::playerDied(int player) 
 {
-	exit_ = true;
+	exit_ = (player == 0) ? PLAYER2_WON : PLAYER1_WON;
 }
 
 void Game::update() {

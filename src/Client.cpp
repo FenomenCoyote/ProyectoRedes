@@ -160,7 +160,6 @@ void Client::handleInput() {
 
 }
 
-
 void Client::render() {
 	SDL_SetRenderDrawColor(game_->getRenderer(), COLOR(0x00AAAAFF));
 	SDL_RenderClear(game_->getRenderer());

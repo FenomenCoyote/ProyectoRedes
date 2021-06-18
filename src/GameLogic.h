@@ -10,13 +10,14 @@ class Game;
 
 class GameLogic: public Component {
 public:
-	GameLogic(AsteroidPool* asPool, BulletsPool* bsPool, Transform* trCaza, Game* game);
+	GameLogic(AsteroidPool* asPool, BulletsPool* bsPool, Transform* trCaza_p1, Transform* trCaza_p2 , Game* game);
 	virtual ~GameLogic();
 	void update() override;
 private:
 	AsteroidPool* asPool; 
 	BulletsPool* bsPool;
-	Transform* trCaza;
+	Transform* trCaza_p1;
+	Transform* trCaza_p2;
 	Game* game;
 
 	bool running;
