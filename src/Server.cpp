@@ -34,11 +34,9 @@ void Server::start() {
 			if(clients.size() == 2){
 				game = new Game(socket, clients[0], clients[1]);
 				game->start();
+				delete game; game = nullptr;
+				clients.clear();
 			}
-			clients.clear();
-		}
-		else if(msg.input == ClientMsg::InputId::_LOGOUT_){
-			delete game; game = nullptr;
 		}
 	}
 }

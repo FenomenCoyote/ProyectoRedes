@@ -30,6 +30,7 @@
 using namespace std;
 
 mutex mGame;
+mutex mExit;
 
 constexpr float timeWait = 1000.0f/60.0f;
 
@@ -95,10 +96,20 @@ void Game::netThread(){
 
 		socket.recv(msg, sd);
 
+		mExit.lock();
+		if(exit_ != PLAYING_) {
+			mExit.unlock();
+			return;
+		}
 		int player = (*sd == *clientSocket_p1.get()) ? 0 : 1;
+		
+		mExit.unlock();
 
-		if(msg.input == ClientMsg::InputId::_LOGOUT_)
+		if(msg.input == ClientMsg::InputId::_LOGOUT_){
+			mExit.lock();
 			exit_ = (player == 0) ? PLAYER2_WON : PLAYER1_WON;
+			mExit.unlock();
+		}
 		else 
 			setPlayerInput(msg.input, player);
 	}
@@ -141,8 +152,13 @@ void Game::setPlayerInput(ClientMsg::InputId input, int player)
 
 
 void Game::sendWorldState(){
-	if(exit_ != PLAYING_)
+	mExit.lock();
+	if(exit_ != PLAYING_) {
+		mExit.unlock();
 		return;
+	}
+	mExit.unlock();
+
 	ServerMsg::ServerMsg msg(asPool, bsPool, shipTr_p1, shipTr_p2);
 	msg.type = ServerMsg::_WORLD_STATE;
 	if(asPool->anyColision())
@@ -167,9 +183,10 @@ void Game::start() {
 	std::thread([this](){
 		this->netThread();
 	}).detach();
-
-
+ 
+	mExit.lock();
 	while (exit_ == PLAYING_) {
+		mExit.unlock();
 		Uint32 startTime = game_->getTime();
 
 		mGame.lock();
@@ -180,14 +197,29 @@ void Game::start() {
 		Uint32 frameTime = game_->getTime() - startTime;
 		if (frameTime < timeWait)
 			SDL_Delay(timeWait - frameTime);
+
+		mExit.lock();
 	}
+	if(mExit.try_lock() == 0) 
+		mExit.unlock();
 
 	ServerMsg::ServerMsg msg;
 	msg.type = ServerMsg::_ENDING_GAME;
 
-	//Mandar info a los dos jugadores (de momento solo a un jugador)
-	socket.send(msg, *clientSocket_p1.get());
-	socket.send(msg, *clientSocket_p2.get());
+	cout << "ending game, sending msg ..." << endl;
+
+	if(exit_ == GameState::PLAYER1_WON){
+		msg.won = true;
+		socket.send(msg, *clientSocket_p1.get());
+		msg.won = false;
+		socket.send(msg, *clientSocket_p2.get());
+	}
+	else if(exit_ == GameState::PLAYER2_WON){
+		msg.won = false;
+		socket.send(msg, *clientSocket_p1.get());
+		msg.won = true;
+		socket.send(msg, *clientSocket_p2.get());
+	}
 }
 
 void Game::playerDied(int player) 
