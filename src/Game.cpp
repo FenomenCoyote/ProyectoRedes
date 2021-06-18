@@ -141,26 +141,16 @@ void Game::setPlayerInput(ClientMsg::InputId input, int player)
 
 
 void Game::sendWorldState(){
-		
-	//Crear info
-	if(exit_ != PLAYING_){
-		ServerMsg::ServerMsg msg;
-		msg.type = ServerMsg::_ENDING_GAME;
+	if(exit_ != PLAYING_)
+		return;
+	ServerMsg::ServerMsg msg(asPool, bsPool, shipTr_p1, shipTr_p2);
+	msg.type = ServerMsg::_WORLD_STATE;
+	if(asPool->anyColision())
+		msg.setSound(ServerMsg::SoundId::_ASTEROID_COLLISION_);
 
-		//Mandar info a los dos jugadores (de momento solo a un jugador)
-		socket.send(msg, *clientSocket_p1.get());
-		socket.send(msg, *clientSocket_p2.get());
-	}
-	else {
-		ServerMsg::ServerMsg msg(asPool, bsPool, shipTr_p1, shipTr_p2);
-		msg.type = ServerMsg::_WORLD_STATE;
-		if(asPool->anyColision())
-			msg.setSound(ServerMsg::SoundId::_ASTEROID_COLLISION_);
-
-		//Mandar info a los dos jugadores (de momento solo a un jugador)
-		socket.send(msg, *clientSocket_p1.get());
-		socket.send(msg, *clientSocket_p2.get());
-	}
+	//Mandar info a los dos jugadores (de momento solo a un jugador)
+	socket.send(msg, *clientSocket_p1.get());
+	socket.send(msg, *clientSocket_p2.get());
 }
 
 void Game::start() {
@@ -190,8 +180,14 @@ void Game::start() {
 		Uint32 frameTime = game_->getTime() - startTime;
 		if (frameTime < timeWait)
 			SDL_Delay(timeWait - frameTime);
-
 	}
+
+	ServerMsg::ServerMsg msg;
+	msg.type = ServerMsg::_ENDING_GAME;
+
+	//Mandar info a los dos jugadores (de momento solo a un jugador)
+	socket.send(msg, *clientSocket_p1.get());
+	socket.send(msg, *clientSocket_p2.get());
 }
 
 void Game::playerDied(int player) 

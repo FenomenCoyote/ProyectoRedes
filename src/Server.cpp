@@ -35,6 +35,7 @@ void Server::start() {
 				game = new Game(socket, clients[0], clients[1]);
 				game->start();
 			}
+			clients.clear();
 		}
 		else if(msg.input == ClientMsg::InputId::_LOGOUT_){
 			delete game; game = nullptr;

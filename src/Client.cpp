@@ -24,7 +24,8 @@ Client::Client(const char* address, const char* port, const char* nick) :
 		game_(nullptr), //
 		exit_(false), 
 		socket(address, port), 
-		inGame(false)
+		inGame(false),
+		msgText(nullptr)
 {
 	initGame();
 }
@@ -56,6 +57,8 @@ void Client::start() {
 		this->netThread();
 	}).detach();
 
+	msgText = game_->getTextureMngr()->getTexture(Resources::PressAnyKey);
+
 	while (!exit_) {
 		Uint32 startTime = game_->getTime();
 
@@ -84,6 +87,9 @@ void Client::netThread()
 			if(msg.type == ServerMsg::_ENDING_GAME){
 				inGame = false;
 				game_->getAudioMngr()->pauseMusic();
+
+				msgText = msg.won ? game_->getTextureMngr()->getTexture(Resources::TextureId::GameWin) : 
+									game_->getTextureMngr()->getTexture(Resources::TextureId::GameLost);
 			} 
 			else if(msg.type == ServerMsg::_WORLD_STATE){
 				asteroids = msg.asteroids;
@@ -185,11 +191,9 @@ void Client::render() {
 		game_->getTextureMngr()->getTexture(Resources::Airplanes)->render(dest, ship2.rot, src);
 	}
 	else {
-		Texture *hitanykey = game_->getTextureMngr()->getTexture(
-				Resources::PressAnyKey);
-		hitanykey->render(
-				game_->getWindowWidth() / 2 - hitanykey->getWidth() / 2,
-				game_->getWindowHeight() - hitanykey->getHeight() - 50);
+		msgText->render(
+				game_->getWindowWidth() / 2 - msgText->getWidth() / 2,
+				game_->getWindowHeight() - msgText->getHeight() - 50);
 	}
 	mClient.unlock();
 

@@ -12,6 +12,7 @@ namespace ServerMsg
         totalSize += sizeof(uint8_t) + numOfBullets * objectInfoSize; //Bullets
         totalSize += 2 * objectInfoSize; //Ship1 + Ship2
         totalSize += sizeof(SoundId); //Sound
+        totalSize += sizeof(bool);
 
         alloc_data(totalSize);
 
@@ -64,6 +65,9 @@ namespace ServerMsg
 
         //Sound
         memcpy(pointer, &sound, sizeof(SoundId));
+        pointer += sizeof(SoundId);
+
+        memcpy(pointer, &won, sizeof(bool));
     }
 
     void ServerMsg::to_bin_object(char* pointer, Vector2D pos, int width, int height, double rot) 
@@ -141,6 +145,9 @@ namespace ServerMsg
 
         //Sound
         memcpy(&sound, pointer, sizeof(SoundId));
+        pointer += sizeof(SoundId);
+
+        memcpy(&won, pointer, sizeof(bool));
 
         return 0;
     }

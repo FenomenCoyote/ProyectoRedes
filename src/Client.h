@@ -34,6 +34,8 @@ private:
 	vector<ServerMsg::ServerMsg::ObjectInfo> asteroids, bullets;
 	ServerMsg::ServerMsg::ObjectInfo ship1, ship2;
 
+	Texture* msgText;
+
 	const static int _WINDOW_WIDTH_ = 640;
 	const static int _WINDOW_HEIGHT_ = 480;
 
