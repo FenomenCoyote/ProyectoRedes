@@ -7,6 +7,7 @@
 #include <assert.h>
 #include <iostream>
 #include <mutex>
+#include <thread>
 
 using namespace std;
 
@@ -42,9 +43,9 @@ void Server::start() {
 
 	while(true){
 		serverMutex.lock();
-		if(clients.size() >= 2){	
+		if(clients.size() == 2){	
 			serverMutex.unlock();
-			game = new Game(socket, clients[0], clients[1]);
+			game = new Game(socket, clients.front(), clients.back());
 			game->start();
 
 			serverMutex.lock();
@@ -71,22 +72,30 @@ void Server::netThread(){
 		switch (msg.input)
 		{
 			case ClientMsg::InputId::_READY_:
+				cout << "Player conected ..." << endl;
 				clients.push_back(std::unique_ptr<Socket>(std::move(sd)));
 				break;
 			case ClientMsg::InputId::_LOGOUT_: {
-				auto it = clients.begin();
-				while( it != clients.end() ){
-					if( it->get() == sd ){
-						clients.erase(it);
-						break;
+				if(game != nullptr){
+					cout << "Player disconected ..." << endl;
+					int player = (*sd == *(clients.front()).get()) ? 0 : 1;
+					game->playerDied(player);
+				}
+				else {
+					auto it = clients.begin();
+					while( it != clients.end() ){
+						if( it->get() == sd ){
+							clients.erase(it);
+							break;
+						}
+						++it;
 					}
-					++it;
 				}
 				break;
 			}
 			default:{
 				if(game != nullptr){
-					int player = (*sd == *clients[0].get()) ? 0 : 1;
+					int player = (*sd == *(clients.front()).get()) ? 0 : 1;
 					game->setPlayerInput(msg.input, player);
 				}
 				break;

@@ -79,16 +79,12 @@ void Client::stop() {
 void Client::netThread() 
 {
 	while(1){
-		cout << "waiting next msg ... " << flush;
 		ServerMsg::ServerMsg msg;
 		socket.recv(msg);
-
-		cout << " got msg ... " << flush;
 
 		mClient.lock();
 		if(inGame){
 			if(msg.type == ServerMsg::_ENDING_GAME){
-				cout << "ending game" << endl;
 				inGame = false;
 				game_->getAudioMngr()->pauseMusic();
 
@@ -101,7 +97,6 @@ void Client::netThread()
 									game_->getTextureMngr()->getTexture(Resources::TextureId::GameLost);
 			} 
 			else if(msg.type == ServerMsg::_WORLD_STATE){
-				cout << "world state" << endl;	
 				asteroids = msg.asteroids;
 				bullets = msg.bullets;
 				ship1 = msg.ship1;
@@ -144,8 +139,6 @@ void Client::handleInput() {
 			inGame = true;
 			ClientMsg::InputMsg msg(ClientMsg::_READY_);
 			socket.send(msg, socket);
-
-			cout << "sending ready msg" << endl;
 
 			return;
 		}

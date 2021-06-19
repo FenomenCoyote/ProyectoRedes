@@ -118,11 +118,12 @@ void Game::start() {
 	while (exit_ == PLAYING_) {
 		Uint32 startTime = game_->getTime();
 
+		update();
+		
 		mGame.lock();
 		unloadQueue();
 		mGame.unlock();
 
-		update();
 		sendWorldState();
 	
 		Uint32 frameTime = game_->getTime() - startTime;
