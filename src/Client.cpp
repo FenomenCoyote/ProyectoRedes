@@ -92,6 +92,11 @@ void Client::netThread()
 				inGame = false;
 				game_->getAudioMngr()->pauseMusic();
 
+				asteroids.clear();
+				bullets.clear();
+				ship1.posX = 5000;
+				ship2.posY = 5000;
+
 				msgText = msg.won ? game_->getTextureMngr()->getTexture(Resources::TextureId::GameWin) : 
 									game_->getTextureMngr()->getTexture(Resources::TextureId::GameLost);
 			} 
@@ -106,11 +111,6 @@ void Client::netThread()
 			} 
 			else 
 				assert(false);	
-		}
-		else {
-			cout << "starting game" << endl;
-			inGame = true;
-			game_->getAudioMngr()->resumeMusic();
 		}
 		mClient.unlock();
 		
@@ -140,10 +140,12 @@ void Client::handleInput() {
 			}
 		}
 
-		if (!inGame && ih->isKeyDown(SDLK_SPACE)) {
+		if (!inGame && ih->isKeyDown(SDLK_RETURN)) {
 			inGame = true;
 			ClientMsg::InputMsg msg(ClientMsg::_READY_);
 			socket.send(msg, socket);
+
+			cout << "sending ready msg" << endl;
 
 			return;
 		}

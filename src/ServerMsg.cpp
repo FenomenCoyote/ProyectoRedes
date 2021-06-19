@@ -8,6 +8,7 @@ namespace ServerMsg
         uint8_t numOfAsteroids = (asPool == nullptr) ? 0 : asPool->getNumOfAsteroid();
         uint8_t numOfBullets = (buPool == nullptr) ? 0 :buPool->getNumOfBullets();
 
+        totalSize += sizeof(ServerMsgId);
         totalSize += sizeof(uint8_t) + numOfAsteroids * objectInfoSize; //Asteroids
         totalSize += sizeof(uint8_t) + numOfBullets * objectInfoSize; //Bullets
         totalSize += 2 * objectInfoSize; //Ship1 + Ship2
@@ -22,6 +23,9 @@ namespace ServerMsg
 
         memcpy(pointer, &totalSize, sizeof(size_t));
         pointer += sizeof(size_t);
+
+        memcpy(pointer, &type, sizeof(size_t));
+        pointer += sizeof(ServerMsgId);
 
         //Asteroids
         memcpy(pointer, &numOfAsteroids, sizeof(uint8_t));
@@ -116,6 +120,9 @@ namespace ServerMsg
         alloc_data(totalSize - sizeof(size_t));
 
         char* pointer = bobj + sizeof(size_t);
+
+        memcpy(&type, pointer, sizeof(size_t));
+        pointer += sizeof(ServerMsgId);
 
         uint8_t numOfAsteroids;
         uint8_t numOfBullets;

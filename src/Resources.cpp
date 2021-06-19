@@ -24,7 +24,7 @@ vector<Resources::ImageInfo> Resources::images_ {
 vector<Resources::TextMsgInfo> Resources::messages_ {
 //
 		{ HelloWorld, "Hello World", { COLOR(0xaaffffff) }, ARIAL16 }, //
-		{ PressAnyKey, "Press Any Key ...", { COLOR(0xaaffbbff) }, ARIAL24 }, //
+		{ PressAnyKey, "Press Return Key ...", { COLOR(0xaaffbbff) }, ARIAL24 }, //
 		{ GameWin, "Game Over, you won!", { COLOR(0x22ff66ff) }, ARIAL24 }, //
 		{ GameLost, "Game Over, you lost...", { COLOR(0xff6622ff) }, ARIAL24 } //
 };

@@ -52,7 +52,7 @@ Game::~Game() {
 
 void Game::initGame() {
 
-	game_ = ServerSDLGame::init(_WINDOW_WIDTH_, _WINDOW_HEIGHT_);
+	game_ = ServerSDLGame::instance();
 
 	entityManager_ = new EntityManager(game_);
 
@@ -203,23 +203,24 @@ void Game::start() {
 	if(mExit.try_lock() == 0) 
 		mExit.unlock();
 
-	ServerMsg::ServerMsg msg;
-	msg.type = ServerMsg::_ENDING_GAME;
+	ServerMsg::ServerMsg msgp1;
+	msgp1.type = ServerMsg::_ENDING_GAME;
+	ServerMsg::ServerMsg msgp2;
+	msgp2.type = ServerMsg::_ENDING_GAME;
 
 	cout << "ending game, sending msg ..." << endl;
 
 	if(exit_ == GameState::PLAYER1_WON){
-		msg.won = true;
-		socket.send(msg, *clientSocket_p1.get());
-		msg.won = false;
-		socket.send(msg, *clientSocket_p2.get());
+		msgp1.won = true;
+		msgp2.won = false;
 	}
 	else if(exit_ == GameState::PLAYER2_WON){
-		msg.won = false;
-		socket.send(msg, *clientSocket_p1.get());
-		msg.won = true;
-		socket.send(msg, *clientSocket_p2.get());
+		msgp1.won = false;
+		msgp2.won = true;
 	}
+
+	socket.send(msgp1, *clientSocket_p1.get());
+	socket.send(msgp2, *clientSocket_p2.get());
 }
 
 void Game::playerDied(int player) 
