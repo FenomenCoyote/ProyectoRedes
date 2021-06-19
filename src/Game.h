@@ -6,6 +6,7 @@
 #include "ServerSDLGame.h"
 #include "Socket.h"
 #include "ClientMsg.h"
+#include <queue>
 #include <memory>
 
 class AsteroidPool;
@@ -24,7 +25,6 @@ public:
 
 	void playerDied(int player);
 	
-	void netThread();
 	void setPlayerInput(ClientMsg::InputId input, int player);
 	
 private:
@@ -39,6 +39,7 @@ private:
 	void initGame();
 	void closeGame();
 	void update();
+	void unloadQueue();
 
 	ServerSDLGame* game_;
 	EntityManager* entityManager_;
@@ -50,6 +51,9 @@ private:
 	//Info de sockets de los jugadores
 	std::unique_ptr<Socket>& clientSocket_p1;
 	std::unique_ptr<Socket>& clientSocket_p2;
+
+	//Cola de eventos de cada jugador
+	queue<ClientMsg::InputId> inputP1, inputP2;
 
 	//Info del mundo para enviarla
 	AsteroidPool* asPool;

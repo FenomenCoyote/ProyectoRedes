@@ -30,7 +30,6 @@
 using namespace std;
 
 mutex mGame;
-mutex mExit;
 
 constexpr float timeWait = 1000.0f/60.0f;
 
@@ -40,6 +39,7 @@ Game::Game(Socket socket_, std::unique_ptr<Socket>& clientSocket_p1_, std::uniqu
 		exit_(GameState::PLAYING_), 
 		socket(socket_),
 		clientSocket_p1(clientSocket_p1_), clientSocket_p2(clientSocket_p2_),
+		inputP1(), inputP2(),
 		asPool(nullptr), bsPool(nullptr),
 		shipTr_p1(nullptr), shipTr_p2(nullptr), shipCtrl_p1(nullptr), shipCtrl_p2(nullptr)
 {
@@ -89,76 +89,17 @@ void Game::closeGame() {
 	delete entityManager_;
 }
 
-void Game::netThread(){
-	ClientMsg::InputMsg msg(ClientMsg::InputId::_AHEAD_);
-	while(true){
-		Socket* sd = (Socket*)1;
-
-		socket.recv(msg, sd);
-
-		mExit.lock();
-		if(exit_ != PLAYING_) {
-			mExit.unlock();
-			return;
-		}
-		int player = (*sd == *clientSocket_p1.get()) ? 0 : 1;
-		
-		mExit.unlock();
-
-		if(msg.input == ClientMsg::InputId::_LOGOUT_){
-			mExit.lock();
-			exit_ = (player == 0) ? PLAYER2_WON : PLAYER1_WON;
-			mExit.unlock();
-		}
-		else 
-			setPlayerInput(msg.input, player);
-	}
-}
-
-void Game::setPlayerInput(ClientMsg::InputId input, int player) 
-{
+void Game::setPlayerInput(ClientMsg::InputId input, int player) {
 	mGame.lock();
-	switch (input)
-	{
-	case ClientMsg::InputId::_AHEAD_:
-		if(player == 0)
-			shipCtrl_p1->goAhead();
-		else 
-			shipCtrl_p2->goAhead();
-		break;
-	case ClientMsg::InputId::_LEFT_:
-		if(player == 0)
-			shipCtrl_p1->turnLeft();
-		else 
-			shipCtrl_p2->turnLeft();
-		break;
-	case ClientMsg::InputId::_RIGHT_:
-		if(player == 0)
-			shipCtrl_p1->turnRight();
-		else 
-			shipCtrl_p2->turnRight();
-		break;
-	case ClientMsg::InputId::_SHOOT_:
-		if(player == 0)
-			shipCtrl_p1->shoot();
-		else 
-			shipCtrl_p2->shoot();
-		break;
-	default:
-		break;
-	}
+	if(player == 0)
+		inputP1.push(input);
+	else 
+		inputP2.push(input);
 	mGame.unlock();
 }
 
 
 void Game::sendWorldState(){
-	mExit.lock();
-	if(exit_ != PLAYING_) {
-		mExit.unlock();
-		return;
-	}
-	mExit.unlock();
-
 	ServerMsg::ServerMsg msg(asPool, bsPool, shipTr_p1, shipTr_p2);
 	msg.type = ServerMsg::_WORLD_STATE;
 	if(asPool->anyColision())
@@ -174,34 +115,20 @@ void Game::start() {
 
 	asPool->generateAsteroids(game_->getCfg()["gameLogic"]["asteroidsToGenerate"].as_int());
 
-	//net thread 1
-	std::thread([this](){
-		this->netThread();
-	}).detach();
-
-	//net thread 2
-	std::thread([this](){
-		this->netThread();
-	}).detach();
- 
-	mExit.lock();
 	while (exit_ == PLAYING_) {
-		mExit.unlock();
 		Uint32 startTime = game_->getTime();
 
 		mGame.lock();
+		unloadQueue();
+		mGame.unlock();
+
 		update();
 		sendWorldState();
-		mGame.unlock();
 	
 		Uint32 frameTime = game_->getTime() - startTime;
 		if (frameTime < timeWait)
 			SDL_Delay(timeWait - frameTime);
-
-		mExit.lock();
 	}
-	if(mExit.try_lock() == 0) 
-		mExit.unlock();
 
 	ServerMsg::ServerMsg msgp1;
 	msgp1.type = ServerMsg::_ENDING_GAME;
@@ -221,6 +148,48 @@ void Game::start() {
 
 	socket.send(msgp1, *clientSocket_p1.get());
 	socket.send(msgp2, *clientSocket_p2.get());
+}
+
+void Game::unloadQueue(){
+	ClientMsg::InputId input;
+	while(!inputP1.empty()){
+		input = inputP1.front(); inputP1.pop();
+		switch (input) {
+			case ClientMsg::InputId::_AHEAD_:
+				shipCtrl_p1->goAhead();
+				break;
+			case ClientMsg::InputId::_LEFT_:
+				shipCtrl_p1->turnLeft();
+				break;
+			case ClientMsg::InputId::_RIGHT_:
+				shipCtrl_p1->turnRight();
+				break;
+			case ClientMsg::InputId::_SHOOT_:
+				shipCtrl_p1->shoot();
+				break;
+			default:
+				break;
+		}
+	}
+	while(!inputP2.empty()){
+		input = inputP2.front(); inputP2.pop();
+		switch (input) {
+			case ClientMsg::InputId::_AHEAD_:
+				shipCtrl_p2->goAhead();
+				break;
+			case ClientMsg::InputId::_LEFT_:
+				shipCtrl_p2->turnLeft();
+				break;
+			case ClientMsg::InputId::_RIGHT_:
+				shipCtrl_p2->turnRight();
+				break;
+			case ClientMsg::InputId::_SHOOT_:
+				shipCtrl_p2->shoot();
+				break;
+			default:
+				break;
+		}
+	}
 }
 
 void Game::playerDied(int player) 

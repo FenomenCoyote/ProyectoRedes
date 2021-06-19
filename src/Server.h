@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <list>
 #include <memory>
 
 #include "Socket.h"
@@ -14,6 +15,8 @@ public:
 
 	void start();
 
+	void netThread();
+
 private:
 
 	//Socket 
@@ -21,7 +24,7 @@ private:
 
 	Game* game;
 
-	std::vector<std::unique_ptr<Socket>> clients;
+	std::list<std::unique_ptr<Socket>> clients;
 
 	const static int _WINDOW_WIDTH_ = 640;
 	const static int _WINDOW_HEIGHT_ = 480;
