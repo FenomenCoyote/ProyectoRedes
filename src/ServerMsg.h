@@ -9,7 +9,6 @@
 namespace ServerMsg
 {
     enum ServerMsgId : uint8_t {
-        _STARTING_GAME,
         _WORLD_STATE,
         _ENDING_GAME
     };
@@ -26,6 +25,7 @@ namespace ServerMsg
             Msg(ServerMsgId type) : type(type) {}
     };
 
+    //Cant use sizeof(ObjectInfo) because compiler may add padding 
     constexpr size_t objectInfoSize = 3 * sizeof(double) + 2 * sizeof(int);
 
     class ServerMsg : public Msg{
@@ -49,6 +49,7 @@ namespace ServerMsg
             void setSound(SoundId sound_) { sound = sound_;}
             void setWinner(bool w) { won = w;}
             
+            //public variables needed to reconstruct the world state in the client side
             std::vector<ObjectInfo> asteroids, bullets;
             ObjectInfo ship1, ship2;
             SoundId sound;

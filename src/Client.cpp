@@ -20,7 +20,7 @@ constexpr float time_wait = 1000.f/60.0f;
 
 mutex mClient;
 
-Client::Client(const char* address, const char* port, const char* nick) :
+Client::Client(const char* address, const char* port) :
 		game_(nullptr), //
 		exit_(false), 
 		socket(address, port), 
@@ -31,7 +31,7 @@ Client::Client(const char* address, const char* port, const char* nick) :
 }
 
 Client::~Client() {
-	closeGame();
+
 }
 
 void Client::initGame() {
@@ -42,10 +42,6 @@ void Client::initGame() {
 	game_->getAudioMngr()->setMusicVolume(20);
 	game_->getAudioMngr()->setChannelVolume(5); //Se deja la musica preparada para hacer un resume
 	game_->getAudioMngr()->pauseMusic();
-
-}
-
-void Client::closeGame() {
 
 }
 
@@ -72,12 +68,10 @@ void Client::start() {
 }
 
 void Client::stop() {
-	exit_ = true;
-	
+	exit_ = true;	
 }
 
-void Client::netThread() 
-{
+void Client::netThread() {
 	while(1){
 		ServerMsg::ServerMsg msg;
 		socket.recv(msg);
@@ -90,6 +84,8 @@ void Client::netThread()
 
 				asteroids.clear();
 				bullets.clear();
+
+				//ships are send to oblivion, although not really needed
 				ship1.posX = 5000;
 				ship2.posY = 5000;
 
@@ -97,15 +93,14 @@ void Client::netThread()
 									game_->getTextureMngr()->getTexture(Resources::TextureId::GameLost);
 			} 
 			else if(msg.type == ServerMsg::_WORLD_STATE){
+				//swap the state
 				asteroids = msg.asteroids;
 				bullets = msg.bullets;
 				ship1 = msg.ship1;
 				ship2 = msg.ship2;
 				if(msg.sound == ServerMsg::_ASTEROID_COLLISION_)
 					game_->getAudioMngr()->playChannel(Resources::AudioId::Explosion, 0);
-			} 
-			else 
-				assert(false);	
+			}
 		}
 		mClient.unlock();
 		
@@ -134,7 +129,7 @@ void Client::handleInput() {
 						SDL_WINDOW_FULLSCREEN);
 			}
 		}
-
+		//Send ready msg if not in game
 		if (!inGame && ih->isKeyDown(SDLK_RETURN)) {
 			inGame = true;
 			ClientMsg::InputMsg msg(ClientMsg::_READY_);
@@ -146,6 +141,7 @@ void Client::handleInput() {
 		if(!inGame)
 			return;
 
+		//In game inputs
 		if (ih->isKeyDown(SDLK_UP)) {
 			ClientMsg::InputMsg msg(ClientMsg::InputId::_AHEAD_);
 			socket.send(msg, socket);
@@ -174,23 +170,28 @@ void Client::render() {
 	//Render los objetos que tenga
 	mClient.lock();
 	if(inGame){
+		//render asteroids
 		for(const ServerMsg::ServerMsg::ObjectInfo& o : asteroids){
 			SDL_Rect dest = RECT(o.posX, o.posY, o.width, o.height);
 			game_->getTextureMngr()->getTexture(Resources::Asteroid)->render(dest, o.rot);
 		}
+		//render bullets
 		for(const ServerMsg::ServerMsg::ObjectInfo& o : bullets){
 			SDL_Rect dest = RECT(o.posX, o.posY, o.width, o.height);
 			game_->getTextureMngr()->getTexture(Resources::WhiteRect)->render(dest, o.rot);
 		}
+		//render p1 ship
 		SDL_Rect dest = RECT(ship1.posX, ship1.posY, ship1.width, ship1.height);
 		SDL_Rect src = RECT(47, 90, 207, 250);
 		game_->getTextureMngr()->getTexture(Resources::Airplanes)->render(dest, ship1.rot, src);
 
+		//render p2 ship
 		dest = RECT(ship2.posX, ship2.posY, ship2.width, ship2.height);
 		src = RECT(305, 616, 207, 250);
 		game_->getTextureMngr()->getTexture(Resources::Airplanes)->render(dest, ship2.rot, src);
 	}
 	else {
+		//Render msg
 		msgText->render(
 				game_->getWindowWidth() / 2 - msgText->getWidth() / 2,
 				game_->getWindowHeight() - msgText->getHeight() - 50);

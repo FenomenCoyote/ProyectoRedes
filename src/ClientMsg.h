@@ -17,6 +17,7 @@ namespace ClientMsg
         _LOGOUT_
     };
 
+    //Simple Msg that only carries the instruction
     class InputMsg : public Serializable {
         public:
             InputMsg(InputId input_): input(input_){}

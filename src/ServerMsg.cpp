@@ -4,16 +4,16 @@ namespace ServerMsg
 {
     void ServerMsg::to_bin() 
     { 
-        size_t totalSize = sizeof(size_t);
+        size_t totalSize = sizeof(size_t); //totalSize
         uint8_t numOfAsteroids = (asPool == nullptr) ? 0 : asPool->getNumOfAsteroid();
         uint8_t numOfBullets = (buPool == nullptr) ? 0 :buPool->getNumOfBullets();
 
-        totalSize += sizeof(ServerMsgId);
-        totalSize += sizeof(uint8_t) + numOfAsteroids * objectInfoSize; //Asteroids
-        totalSize += sizeof(uint8_t) + numOfBullets * objectInfoSize; //Bullets
+        totalSize += sizeof(ServerMsgId); //type
+        totalSize += sizeof(uint8_t) + numOfAsteroids * objectInfoSize; //Asteroids (changes)
+        totalSize += sizeof(uint8_t) + numOfBullets * objectInfoSize; //Bullets (changes)
         totalSize += 2 * objectInfoSize; //Ship1 + Ship2
         totalSize += sizeof(SoundId); //Sound
-        totalSize += sizeof(bool);
+        totalSize += sizeof(bool); //won
 
         alloc_data(totalSize);
 
@@ -21,6 +21,7 @@ namespace ServerMsg
 
         char* pointer = _data;
 
+        //Write totalSize (needed to reconstruct this msg because the lenght depends on the state of the world)
         memcpy(pointer, &totalSize, sizeof(size_t));
         pointer += sizeof(size_t);
 
@@ -71,6 +72,7 @@ namespace ServerMsg
         memcpy(pointer, &sound, sizeof(SoundId));
         pointer += sizeof(SoundId);
 
+        //Won
         memcpy(pointer, &won, sizeof(bool));
     }
 
@@ -115,12 +117,15 @@ namespace ServerMsg
     int ServerMsg::from_bin(char * bobj) 
     {
         size_t totalSize;
+        //First i read the totalSize of the msg
         memcpy(&totalSize, bobj, sizeof(size_t));
 
+        //Alloc totalSize - sizeof(totalSize) because i dont need to store totalSize variable
         alloc_data(totalSize - sizeof(size_t));
 
         char* pointer = bobj + sizeof(size_t);
 
+        //Type
         memcpy(&type, pointer, sizeof(size_t));
         pointer += sizeof(ServerMsgId);
 
@@ -143,7 +148,7 @@ namespace ServerMsg
             pointer += objectInfoSize;
         }
 
-        //Ship
+        //Ships
         ship1 = from_bin_object(pointer);
         pointer += objectInfoSize;
 
@@ -154,6 +159,7 @@ namespace ServerMsg
         memcpy(&sound, pointer, sizeof(SoundId));
         pointer += sizeof(SoundId);
 
+        //Won
         memcpy(&won, pointer, sizeof(bool));
 
         return 0;

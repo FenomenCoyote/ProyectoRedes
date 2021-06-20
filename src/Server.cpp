@@ -30,7 +30,7 @@ Server::~Server() {
 void Server::start() {
 	ServerSDLGame::init(_WINDOW_WIDTH_, _WINDOW_HEIGHT_);
 
-	//2 thread to satisfy each player
+	//2 thread for each player
 	//net thread 1
 	std::thread([this](){
 		this->netThread();
@@ -43,11 +43,13 @@ void Server::start() {
 
 	while(true){
 		serverMutex.lock();
+		//If i can start a game
 		if(clients.size() == 2){	
 			serverMutex.unlock();
+			//Creates and runs game (only in this thread)
 			game = new Game(socket, clients.front(), clients.back());
 			game->start();
-
+			//Game finished
 			serverMutex.lock();
 			delete game; game = nullptr;	
 			clients.pop_front();

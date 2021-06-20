@@ -9,10 +9,9 @@
 class Client {
 
 public:
-	Client(const char* address, const char* port, const char* nick);
+	Client(const char* address, const char* port);
 	virtual ~Client();
 
-	// from SDLGame
 	void start();
 	void stop();
 
@@ -20,7 +19,6 @@ public:
 
 private:
 	void initGame();
-	void closeGame();
 	void handleInput();
 	void render();
 

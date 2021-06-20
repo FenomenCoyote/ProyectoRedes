@@ -20,11 +20,12 @@ public:
 	Game(Socket socket_, std::unique_ptr<Socket>& clientSocket_p1_, std::unique_ptr<Socket>& clientSocket_p2_);
 	virtual ~Game();
 
-	// from ServerSDLGame
 	void start();
 
+	//Might be called from a logout from Server or by game logic
 	void playerDied(int player);
 	
+	//Called from Server net threads
 	void setPlayerInput(ClientMsg::InputId input, int player);
 	
 private:
